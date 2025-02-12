@@ -8,9 +8,13 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Anonymous+Pro:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&family=Lora:ital,wght@0,400..700;1,400..700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/css/styles.css">
+    <link rel="stylesheet" href="/css/font_anonymous_pro.css" id="font_stylesheet">
     <link rel="stylesheet" href="/css/prism.css">
     <link rel="icon" type="image/png" href="/favicon.png">
+    <script src="/js/font_picker.js"></script>
 </head>
 <body>
     <div class="container">
@@ -36,6 +40,31 @@
                     <li class="post-link-li"><span class="date">2024-03-30</span> <a href="/posts/2024-03-30-srry-stealer-analysis.html">srry stealer analysis</a></li>
                 </ul>
             </section>
+
+            <div id="font_picker_container">
+                <button id="toggle_button">Pick a Font ▼</button>
+                <div id="font_picker_section">
+                    <input type="radio" id="font_anonymous" name="font" value="Anonymous Pro">
+                    <label for="font_anonymous">Anonymous Pro</label>
+                    <br>
+                    <input type="radio" id="font_lato" name="font" value="Lato">
+                    <label for="font_lato">Lato</label>
+                    <br>
+                    <input type="radio" id="font_lora" name="font" value="Lora">
+                    <label for="font_lora">Lora</label>
+                </div>
+            </div>
+            <!-- <section id="font_picker_section">
+                <h2> Pick a Font </h2>
+                <input type="radio" id="font_anonymous" name="font">
+                <label for="font_anonymous">Anonymous Pro</label>
+                <br>
+                <input type="radio" id="font_lato" name="font">
+                <label for="font_lato">Lato</label>
+                <br>
+                <input type="radio" id="font_lora" name="font">
+                <label for="font_lora">Lora</label>
+            </section> -->
         </main>
     </div>
 </body>

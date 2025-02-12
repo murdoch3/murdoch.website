@@ -1,7 +1,6 @@
 body {
     min-height: 100%;
     margin: 0 auto;
-    font-family: 'Anonymous Pro', monospace;
     color: #00BFFF;
     background-color: #000011;
     line-height: 1.6;
@@ -31,7 +30,6 @@ header, nav, main section {
 
 
 h1, h2 {
-    font-family: 'Anonymous Pro', sans-serif;
     margin-top: 0;
     margin-bottom: 0;
 }
@@ -149,7 +147,6 @@ body {
 .ioc-table {
     width: 100%;
     border-collapse: collapse;
-    font-family: 'Space Mono', monospace;
     color: #00BFFF;
     background: linear-gradient(to bottom right, #000033, #000011);
     border: 2px solid #00BFFF;
@@ -186,4 +183,54 @@ body {
     .ioc-table .long-content {
         max-width: 200px;
     }
+}
+
+/* Style picker */
+/* Widget styling */
+#font_picker_container {
+    background: linear-gradient(to bottom right, #000033, #000011);
+    border: 2px solid #00BFFF;
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 200px;
+    /* background: rgba(0, 0, 0, 0.8); */
+    /* color: white; */
+    padding: 10px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+    /* font-family: sans-serif; */
+}
+
+/* Hidden by default */
+#font_picker_section {
+    display: none;
+    margin-top: 10px;
+}
+
+/* Toggle button */
+#toggle_button {
+    background: linear-gradient(to bottom right, #000033, #000011);
+    /* border: 2px solid #00BFFF; */
+    /*background: white;
+    color: black;*/
+    border: none;
+    color: white;
+    padding: 5px 10px;
+    cursor: pointer;
+    width: 100%;
+    font-weight: bold;
+    text-align: center;
+    border-radius: 5px;
+}
+
+/* Style for font options */
+input[type="radio"] {
+    margin-right: 5px;
+}
+
+label {
+    cursor: pointer;
+    /* display: block; */
+    padding: 2px 0;
 }
