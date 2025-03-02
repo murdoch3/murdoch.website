@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom" xml:lang="en">
+    <title> - sysadmin</title>
+    <link rel="self" type="application/atom+xml" href="https://murdoch.website/categories/sysadmin/atom.xml"/>
+    <link rel="alternate" type="text/html" href="https://murdoch.website"/>
+    <generator uri="https://www.getzola.org/">Zola</generator>
+    <updated>2024-12-01T00:00:00+00:00</updated>
+    <id>https://murdoch.website/categories/sysadmin/atom.xml</id>
+    <entry xml:lang="en">
+        <title>Mounting NTFS drives on FreeBSD 14.1</title>
+        <published>2024-12-01T00:00:00+00:00</published>
+        <updated>2024-12-01T00:00:00+00:00</updated>
+        
+        <author>
+          <name>
+            
+              Unknown
+            
+          </name>
+        </author>
+        
+        <link rel="alternate" type="text/html" href="https://murdoch.website/mounting-ntfs-freebsd/"/>
+        <id>https://murdoch.website/mounting-ntfs-freebsd/</id>
+        
+        <content type="html" xml:base="https://murdoch.website/mounting-ntfs-freebsd/">&lt;h3 id=&quot;introduction&quot;&gt;Introduction&lt;&#x2F;h3&gt;
+&lt;p&gt;On a fresh install of FreeBSD 14.1 I ran into the problem of mounting my NTFS partitions which had backed up data from a previous Windows install. While there are many resources solving this problem for older versions of FreeBSD (some of them listed in the references), I found them all outdated in one way or another.&lt;&#x2F;p&gt;
+&lt;p&gt;In this post I&#x27;ll demonstrate how you can mount NTFS partitions on FreeBSD 14.1, including working &#x2F;etc&#x2F;fstab entries so that they can be mounted on boot.&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;guide&quot;&gt;Guide&lt;&#x2F;h3&gt;
+&lt;p&gt;First, we have to find our NTFS partitions. The easiest way I&#x27;ve found to do this is by using Vermaden&#x27;s lsblk script (which mimics the Linux tool of the same name):&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;bash&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-bash &quot;&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;curl&lt;&#x2F;span&gt;&lt;span&gt; https:&#x2F;&#x2F;raw.githubusercontent.com&#x2F;vermaden&#x2F;lsblk&#x2F;refs&#x2F;heads&#x2F;master&#x2F;lsblk&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt; -o&lt;&#x2F;span&gt;&lt;span&gt; lsblk.sh
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;chmod&lt;&#x2F;span&gt;&lt;span&gt; +x .&#x2F;lsblk.sh
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;.&#x2F;lsblk.sh
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;Based on the `ms-basic-data` partitions in the output, I can tell the NTFS partitions I&#x27;m looking for are ada0p1 and ada1p1.&lt;&#x2F;p&gt;
+&lt;p&gt;Now we can work on mounting them. As root:&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;bash&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-bash &quot;&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;# Install FUSE and its NTFS driver
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;pkg&lt;&#x2F;span&gt;&lt;span&gt; install fuse fuse-utils fusefs-ntfs
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;# Load the fusefs kernel driver
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;kldload&lt;&#x2F;span&gt;&lt;span&gt; fusefs
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;# Add it to &#x2F;boot&#x2F;loader.conf so it loads on boot before mounts occur
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#96b5b4;&quot;&gt;echo &lt;&#x2F;span&gt;&lt;span&gt;&amp;#39;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;fusefs_load=&amp;quot;YES&amp;quot;&lt;&#x2F;span&gt;&lt;span&gt;&amp;#39; | &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;tee -a&lt;&#x2F;span&gt;&lt;span&gt; &#x2F;boot&#x2F;loader.conf
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;# Mount the partitions using ntfs-3g
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;mkdir&lt;&#x2F;span&gt;&lt;span&gt; &#x2F;mnt&#x2F;hdd
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;ntfs-3g&lt;&#x2F;span&gt;&lt;span&gt; &#x2F;dev&#x2F;ada0p1 &#x2F;mnt&#x2F;hdd
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;mkdir&lt;&#x2F;span&gt;&lt;span&gt; &#x2F;mnt&#x2F;sdd
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;ntfs-3g&lt;&#x2F;span&gt;&lt;span&gt; &#x2F;dev&#x2F;ada1p1 &#x2F;mnt&#x2F;sdd
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;To have these partitions mount on boot, we can add the following lines to the &#x2F;etc&#x2F;fstab file:&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;fstab&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-fstab &quot;&gt;&lt;code class=&quot;language-fstab&quot; data-lang=&quot;fstab&quot;&gt;&lt;span&gt;# &#x2F;etc&#x2F;fstab...
+&lt;&#x2F;span&gt;&lt;span&gt;&#x2F;dev&#x2F;ada0p1 &#x2F;mnt&#x2F;hdd fuse rw,auto,mountprog=&#x2F;usr&#x2F;local&#x2F;bin&#x2F;ntfs-3g 0 0
+&lt;&#x2F;span&gt;&lt;span&gt;&#x2F;dev&#x2F;ada1p1 &#x2F;mnt&#x2F;sdd fuse rw,auto,mountprog=&#x2F;usr&#x2F;local&#x2F;bin&#x2F;ntfs-3g 0 0
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;If you haven&#x27;t already mounted the partitions with ntfs-3g, you can test this with `mount -a`&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;references&quot;&gt;References&lt;&#x2F;h3&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&quot;https:&#x2F;&#x2F;www.gridbugs.org&#x2F;ntfs-on-freebsd&#x2F;&quot;&gt;&#x27;NTFS on FreeBSD&#x27; at gridbugs.org&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;a href=&quot;http:&#x2F;&#x2F;kflu.github.io&#x2F;2018&#x2F;02&#x2F;03&#x2F;2018-02-03-freebsd-ntfs&#x2F;&quot;&gt;&#x27;Mounting NTFS on FreeBSD&#x27; on kflu.github.io&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;a href=&quot;https:&#x2F;&#x2F;chieflemming.wordpress.com&#x2F;2020&#x2F;01&#x2F;08&#x2F;formatting-partitioning-and-mounting-drives-for-ntfs-with-freebsd-and-mac-os-x&#x2F;&quot;&gt;&#x27;Formatting, partitioning, and mounting drives for NTFS with FreeBSD and Mac OS X&#x27; on chieflemming.wordpress.com&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;a href=&quot;https:&#x2F;&#x2F;forums.freebsd.org&#x2F;threads&#x2F;how-to-mount-ntfs-during-freebsd-installation-process.71619&#x2F;&quot;&gt;&#x27;How to mount NTFS during FreeBSD installation process ?&#x27;&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;a href=&quot;https:&#x2F;&#x2F;raw.githubusercontent.com&#x2F;vermaden&#x2F;lsblk&#x2F;refs&#x2F;heads&#x2F;master&#x2F;lsblk&quot;&gt;Vermaden&#x27;s lsblk script&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+</content>
+        
+    </entry>
+</feed>

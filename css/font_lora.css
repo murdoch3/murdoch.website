@@ -1,0 +1,16 @@
+body {
+    font-family: 'Lora';
+}
+
+h1, h2 {
+    font-family: 'Lora';
+}
+
+button {
+    font-family: 'Lora';
+    font-weight: bold;
+}
+
+.ioc-table {
+    font-family: 'Lora';
+}
