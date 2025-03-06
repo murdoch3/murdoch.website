@@ -84,6 +84,8 @@ end
 
 Requirements: Vagrant, HyperV, and sufficient disk space for the gusztavvargadr/windows-10 Vagrant box and the FlareVM installation.
 
+Get the latest version of the Vagrant file from [here](https://github.com/murdoch3/FlareVagrant).
+
 To use this Vagrantfile to create a FlareVM virtual machine, run the following commands:
 
 ```batch
