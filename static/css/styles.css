@@ -76,7 +76,7 @@ nav a:hover {
 }
 
 .date {
-    color: #00CED1;
+    /* color: #00CED1; */
     margin-right: 10px;
 }
 
@@ -117,11 +117,11 @@ code {
 }
 
 img {
-    width: 100%;
+    max-width: 100%;
     height: auto;
     display: block; /* Removes any extra space below the image */
     object-fit: contain; /* Ensures the image is scaled while maintaining aspect ratio */
-    max-width: none; /* Allows the image to be larger than its container if needed */
+    /*max-width: none;*/ /* Allows the image to be larger than its container if needed */
 
 }
 
