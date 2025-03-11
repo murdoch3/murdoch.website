@@ -1,0 +1,16 @@
+body {
+    font-family: 'Lato';
+}
+
+h1, h2 {
+    font-family: 'Lato';
+}
+
+button {
+    font-family: 'Lato';
+    font-weight: bold;
+}
+
+.ioc-table {
+    font-family: 'Lato';
+}
