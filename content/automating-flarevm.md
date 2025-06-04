@@ -1,5 +1,5 @@
 +++
-title = "Automating the Provisioning and Deployment of FlareVM with Vagrant"
+title = "Automate FlareVM with Vagrant"
 date = 2024-08-22
 [taxonomies]
 categories = ["automation", "malware-analysis"]

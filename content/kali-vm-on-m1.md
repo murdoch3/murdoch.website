@@ -1,5 +1,5 @@
 +++
-title = "Setting Up Kali Linux VM/Container with GUI on M-Series Macs"
+title = "Run Kali Linux with GUI on M-Series Macs"
 date = 2024-08-30
 [taxonomies]
 categories = ["ctfs"]

@@ -1,5 +1,5 @@
 +++
-title = "Decompiling a Godot 3.5.1 Encrypted Game"
+title = "Decompiling an Encrypted Godot 3.5.1 Game"
 date = 2025-05-30
 [taxonomies]
 categories = ["reversing"]
