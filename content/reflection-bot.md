@@ -1,5 +1,5 @@
 +++
-title = "Creating a Runescape Reflection Bot from Scratch 2"
+title = "Creating a Runescape Reflection Bot from Scratch"
 date = 2024-05-05
 [taxonomies]
 categories = ["reversing"]
