@@ -1,0 +1,237 @@
+body {
+    min-height: 100%;
+    margin: 0 auto;
+    color: #00BFFF;
+    background-color: #000011;
+    line-height: 1.6;
+    /*animation: fadeIn 1.5s;*/
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+header, nav, main section {
+    background: linear-gradient(to bottom right, #000033, #000011);
+    border: 2px solid #00BFFF;
+    /*box-shadow: 0 0 10px #00BFFF;*/
+    margin-bottom: 20px;
+    padding: 20px;
+    overflow: hidden;
+    /*border-radius: 8px;*/
+}
+
+
+h1, h2 {
+    margin-top: 0;
+    margin-bottom: 0;
+}
+
+h1 {
+    font-size: 2.5em;
+    text-align: center;
+    /*animation: glow 2s ease-in-out infinite alternate;*/
+}
+
+
+nav {
+    text-align: center;
+}
+
+#post-title {
+    text-align: center;
+}
+
+nav a {
+    color: #00CED1;
+    text-decoration: none;
+    margin: 0 10px;
+    transition: color 0.3s ease;
+}
+
+nav a:hover {
+    color: #FFFFFF;
+}
+
+.post-link-ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+.post-link-li {
+    margin-bottom: 10px;
+    transition: all 0.3s ease;
+}
+
+.post-link-li:hover {
+    transform: translateX(5px);
+    background-color: rgba(0, 191, 255, 0.1);
+}
+
+.date {
+    /* color: #00CED1; */
+    margin-right: 10px;
+}
+
+.post-meta {
+    margin-top: 10px;
+}
+
+a {
+    /* color: #00BFFF; */
+    color: #00CED1;
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+li {
+    /*padding-top: 2px;*/
+}
+
+.table-of-contents {
+    text-align: left;
+}
+
+code {
+    word-wrap: break-word;
+}
+
+pre {
+    margin: 1em 0;
+    border-radius: 5px;
+}
+code {
+    font-size: 14px;
+    white-space: pre-wrap;
+    word-break: break-all;
+}
+
+img {
+    max-width: 100%;
+    height: auto;
+    display: block; /* Removes any extra space below the image */
+    object-fit: contain; /* Ensures the image is scaled while maintaining aspect ratio */
+    /*max-width: none;*/ /* Allows the image to be larger than its container if needed */
+
+}
+
+@media (max-width: 600px) {
+    .container {
+        padding: 10px;
+    }
+    
+    h1 {
+        font-size: 2em;
+    }
+}
+
+body {
+    background-image: url("../img/stars3.gif");
+}
+
+.table-container {
+    max-width: 100%;
+    overflow-x: auto;
+    margin-bottom: 1em;
+}
+
+.ioc-table {
+    width: 100%;
+    border-collapse: collapse;
+    color: #00BFFF;
+    background: linear-gradient(to bottom right, #000033, #000011);
+    border: 2px solid #00BFFF;
+    box-shadow: 0 0 10px #00BFFF;
+}
+
+.ioc-table th, .ioc-table td {
+    padding: 10px;
+    text-align: left;
+    border-bottom: 1px solid #00BFFF;
+}
+
+.ioc-table th {
+    background-color: rgba(0, 191, 255, 0.1);
+    font-weight: bold;
+}
+
+.ioc-table .long-content {
+    max-width: 300px;
+    overflow-x: auto;
+    white-space: nowrap;
+}
+
+.ioc-table tr:hover {
+    background-color: rgba(0, 191, 255, 0.05);
+}
+
+@media (max-width: 600px) {
+    .ioc-table th, .ioc-table td {
+        padding: 8px;
+        font-size: 14px;
+    }
+    
+    .ioc-table .long-content {
+        max-width: 200px;
+    }
+}
+
+/* Style picker */
+/* Widget styling */
+#font_picker_container {
+    background: linear-gradient(to bottom right, #000033, #000011);
+    border: 2px solid #00BFFF;
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 200px;
+    /* background: rgba(0, 0, 0, 0.8); */
+    /* color: white; */
+    padding: 10px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+    /* font-family: sans-serif; */
+}
+
+/* Hidden by default */
+#font_picker_section {
+    display: none;
+    margin-top: 10px;
+}
+
+/* Toggle button */
+#toggle_button {
+    background: linear-gradient(to bottom right, #000033, #000011);
+    /* border: 2px solid #00BFFF; */
+    /*background: white;
+    color: black;*/
+    border: none;
+    color: white;
+    padding: 5px 10px;
+    cursor: pointer;
+    width: 100%;
+    font-weight: bold;
+    text-align: center;
+    border-radius: 5px;
+}
+
+/* Style for font options */
+input[type="radio"] {
+    margin-right: 5px;
+}
+
+label {
+    cursor: pointer;
+    /* display: block; */
+    padding: 2px 0;
+}

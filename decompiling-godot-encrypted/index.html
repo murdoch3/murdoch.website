@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- <title>Murdoch's Blog</title> -->
+    <title> Decompiling an Encrypted Godot 3.5.1 Game | Murdoch's Website </title>
+    <!-- Import fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Anonymous+Pro:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&family=Lora:ital,wght@0,400..700;1,400..700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/styles.css">
+    <link rel="stylesheet" href="/css/font_anonymous_pro.css" id="font_stylesheet">
+    <link rel="stylesheet" href="/css/prism.css">
+    <link rel="icon" type="image/png" href="/favicon.png">
+    <script src="/js/font_picker.js"></script>
+    <meta name="msvalidate.01" content="1B81B4B36B69521589792FCAE9AEFFD9" />
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><a href="/">Murdoch's Blog</a></h1>
+        </header>
+        
+        <main>
+            
+
+<section id="post-title">
+    <h2>Decompiling an Encrypted Godot 3.5.1 Game</h2>
+    <div class="post-meta">
+        <span class="date">2025-05-30</span>
+        <span class="category">reversing</span>
+    </div>
+</section>
+
+<!-- Content needs to include the table of contents and page content -->
+<!-- Ideally we'd be able to split it off somehow -->
+
+<nav class="table-of-contents">
+    <h2>Contents</h2>
+    <ul>
+        
+        <li>
+            <a href="https://murdoch.website/decompiling-godot-encrypted/#decryption">Decryption</a>
+            
+            <ul>
+                
+                <li>
+                    <a href="https://murdoch.website/decompiling-godot-encrypted/#problem">Problem</a>
+                </li>
+                
+                <li>
+                    <a href="https://murdoch.website/decompiling-godot-encrypted/#finding-the-key">Finding the Key</a>
+                </li>
+                
+            </ul>
+            
+        </li>
+        
+        <li>
+            <a href="https://murdoch.website/decompiling-godot-encrypted/#appendix-building-an-encrypted-godot-3-5-1-project">Appendix: Building an Encrypted Godot 3.5.1 Project</a>
+            
+        </li>
+        
+    </ul>
+</nav>
+
+
+<section id="post-content">
+    <p><em>Disclaimer: This guide is intended for educational use only.</em></p>
+<h2 id="decryption">Decryption</h2>
+<h3 id="problem">Problem</h3>
+<p>When we try to recover an encrypted Godot project with Godot RE Tools (<a href="https://github.com/GDRETools/gdsdecomp">link</a>), we get the following error:
+<img src="/img/DecompilingGodotEncrypted/img7.png" alt="" /></p>
+<p>However, in this version of Godot, the key is stored unobfuscated within the game executable.  This post will show the process of finding this key in an project I exported myself (as discussed in the appendix).</p>
+<h3 id="finding-the-key">Finding the Key</h3>
+<h4 id="analyzing-godot-s-source-code">Analyzing Godot's Source Code</h4>
+<p>Since Godot is open-source, we can start our search by grep'ing over the source code for places where encryption, decryption, or keys are mentioned.  Searching for <code>encryption</code>, an interesting reference to <code>script_encryption_key</code> is found:
+<img src="/img/DecompilingGodotEncrypted/img8.png" alt="" /></p>
+<p>The reference is found in gdscript.cpp's GDScript::load_byte_code method, which we know is used for the decryption process at runtime based on <a href="https://docs.godotengine.org/en/3.5/development/compiling/compiling_with_script_encryption_key.html">this documentation page</a>:
+<img src="/img/DecompilingGodotEncrypted/img9.png" alt="" /></p>
+<p>Viewing this block of code in VS Code, we can see that the key is read into a uint8 Vector and is used to decrypt a file with AES256 ECB.  This step is performed for file paths ending in "gde".  As "gd" is the standard file extension for Godot scripts, it seems likely this function is being used to decrypt each of the game's encrypted scripts.
+<img src="/img/DecompilingGodotEncrypted/img10.png" alt="" /></p>
+<p>At this point, we want to see if we can find this function in a disassembler.  Luckily, Godot prints many useful error messages that we can use to perform string searches.  For example, we can peek at the macro expansion for the ERR_FAIL_COND_V macro seen above:
+<img src="/img/DecompilingGodotEncrypted/img11.png" alt="" /></p>
+<h4 id="finding-the-decryption-routine-in-ida">Finding the Decryption Routine in IDA</h4>
+<p>Using IDA, we can use the Strings subview and filter for a string matching the ERROR string we found from the expanded macro above:
+<img src="/img/DecompilingGodotEncrypted/img13.png" alt="" /></p>
+<p>We can now go to the address of the top result, the only string to match ours exactly.  Viewing the xrefs will take us to the function where it is used, which IDA has named <code>sub_1400DAE00</code> for my example binary.</p>
+<h4 id="finding-the-key-1">Finding the Key</h4>
+<p>Having found the <code>load_byte_code</code> function, we can begin to look for the <code>script_execution_key</code>.  We know from the source code that it is copied over, one byte at a time, to a new vector, and that this is the only loop construct in the function.</p>
+<p>Shortly after the condition string is referenced, we find such a loop construct in the IDA decompilation:</p>
+<pre data-lang="C" style="background-color:#2b303b;color:#c0c5ce;" class="language-C "><code class="language-C" data-lang="C"><span>	</span><span style="color:#65737e;">//...
+</span><span>	v87 = </span><span style="color:#d08770;">0</span><span>;
+</span><span>	</span><span style="color:#bf616a;">sub_140013410</span><span>(&amp;v87, </span><span style="color:#d08770;">32</span><span>);
+</span><span>	v12 = </span><span style="color:#d08770;">0</span><span>;
+</span><span>	</span><span style="color:#b48ead;">for </span><span>( i = </span><span style="color:#d08770;">0</span><span>; ; ++i )
+</span><span>	{
+</span><span>		v14 = </span><span style="color:#d08770;">0</span><span>;
+</span><span>		</span><span style="color:#b48ead;">if </span><span>( v87 )
+</span><span>			v14 = (</span><span style="color:#b48ead;">int </span><span>*)(v87 - </span><span style="color:#d08770;">4</span><span>);
+</span><span>		v15 = v14 ? *v14 : </span><span style="color:#d08770;">0</span><span>;
+</span><span>		</span><span style="color:#b48ead;">if </span><span>( v12 &gt;= v15 )
+</span><span>			</span><span style="color:#b48ead;">break</span><span>;
+</span><span>		</span><span style="color:#b48ead;">if </span><span>( i &lt; </span><span style="color:#d08770;">0 </span><span>|| (!v87 || v87 == </span><span style="color:#d08770;">4 </span><span>? (v16 = </span><span style="color:#d08770;">0</span><span>) : (v16 = *(_DWORD *)(v87 - </span><span style="color:#d08770;">4</span><span>)), v12 &gt;= v16) )
+</span><span>		{
+</span><span>			</span><span style="color:#b48ead;">if </span><span>( v14 )
+</span><span>				v4 = *v14;
+</span><span>			</span><span style="color:#bf616a;">sub_1415436C0</span><span>(
+</span><span>			  (</span><span style="color:#b48ead;">unsigned int</span><span>)&quot;</span><span style="color:#a3be8c;">VectorWriteProxy&lt;unsigned char&gt;::operator []</span><span>&quot;,
+</span><span>			  (</span><span style="color:#b48ead;">unsigned int</span><span>)&quot;</span><span style="color:#a3be8c;">C:</span><span style="color:#96b5b4;">\\</span><span style="color:#a3be8c;">Users</span><span style="color:#96b5b4;">\\</span><span style="color:#a3be8c;">murdoch</span><span style="color:#96b5b4;">\\</span><span style="color:#a3be8c;">Downloads</span><span style="color:#96b5b4;">\\</span><span style="color:#a3be8c;">godot-3.5.1-stable</span><span style="color:#96b5b4;">\\</span><span style="color:#a3be8c;">core/vector.h</span><span>&quot;,
+</span><span>			  </span><span style="color:#d08770;">49</span><span>,
+</span><span>			  v12,
+</span><span>			  v4,
+</span><span>			  (__int64)&quot;</span><span style="color:#a3be8c;">p_index</span><span>&quot;,
+</span><span>			  (__int64)&quot;</span><span style="color:#a3be8c;">((Vector&lt;T&gt; *)(this))-&gt;_cowdata.size()</span><span>&quot;,
+</span><span>			  (__int64)&amp;Locale,
+</span><span>			  </span><span style="color:#d08770;">1</span><span>);
+</span><span>			</span><span style="color:#bf616a;">sub_141543420</span><span>();
+</span><span>			</span><span style="color:#bf616a;">__debugbreak</span><span>();
+</span><span>		}
+</span><span>		</span><span style="color:#bf616a;">sub_140008C90</span><span>(&amp;v87);
+</span><span>		*(_BYTE *)(i + v87) = byte_1421E11B8[i];
+</span><span>		++v12;
+</span><span>	}
+</span><span>    </span><span style="color:#65737e;">//...
+</span></code></pre>
+<p>Without having to tease out much, we can tell that the static variable <code>byte_1421E11B8</code> is likely what we're looking for.  This is because it is a static variable being read, one byte each iteration, into another buffer, just like in the source code.  Furthermore, we can see v87, the buffer the bytes are written into, appears to be initialized to size 32 before the loop via <code>sub_140013410</code>.</p>
+<p>When we access <code>byte_1421E11B8</code>, we find our 32-byte key:</p>
+<pre style="background-color:#2b303b;color:#c0c5ce;"><code><span>.data:0000000142159E38 byte_142159E38  db 60h, 0C1h, 1Fh, 4Ah, 0DBh, 59h, 28h, 0EDh, 0Ch, 80h
+</span><span>.data:0000000142159E38                                         ; DATA XREF: sub_1400DAE00+18D↑o
+</span><span>.data:0000000142159E42                 db 15h, 30h, 47h, 9Ah, 0EFh, 8Dh, 58h, 0F7h, 0C2h, 0F0h
+</span><span>.data:0000000142159E4C                 db 89h, 43h, 8, 0C2h, 0E9h, 44h, 6Ch, 0ECh, 5Bh, 37h, 3Eh
+</span><span>.data:0000000142159E57                 db 0FEh, 8 dup(0)
+</span></code></pre>
+<p>This is the 32-byte key that I generated in the first step of the Appendix.  This key can then be used in Godot RE Tools to decrypt the Godot project's scripts.</p>
+<h2 id="appendix-building-an-encrypted-godot-3-5-1-project">Appendix: Building an Encrypted Godot 3.5.1 Project</h2>
+<p>Documentation: <a href="https://docs.godotengine.org/en/3.5/development/compiling/compiling_with_script_encryption_key.html">Here</a></p>
+<p>I'm just using the Godot Third-Person Shooter Demo to test.</p>
+<p>First we need to generate a key to use for encryption:
+<img src="/img/DecompilingGodotEncrypted/img1.png" alt="" /></p>
+<p>To be able to use encryption, we need to build our own export templates, using an environment variable to specify our encryption key.  The documentation for this process can be found <a href="https://docs.godotengine.org/en/stable/contributing/development/compiling/compiling_for_windows.html#creating-windows-export-templates">here</a>.  Below are the PowerShell commands I used to build the export templates from the Godot 3.5.1 source (which can be found <a href="https://github.com/godotengine/godot/releases/tag/3.5.1-stable">here</a>):</p>
+<pre data-lang="powershell" style="background-color:#2b303b;color:#c0c5ce;" class="language-powershell "><code class="language-powershell" data-lang="powershell"><span>cd &quot;</span><span style="color:#a3be8c;">godot-3.5.1-stable</span><span>&quot;
+</span><span>$</span><span style="color:#bf616a;">env:SCRIPT_AES256_ENCRYPTION_KEY</span><span>=&quot;</span><span style="color:#a3be8c;">60c11f4adb5928ed0c801530479aef8d58f7c2f0894308c2e9446cec5b373efe</span><span>&quot;
+</span><span>scons platform=windows tools=no target=release_debug bits=</span><span style="color:#d08770;">32
+</span><span>scons platform=windows tools=no target=release bits=</span><span style="color:#d08770;">32
+</span><span>scons platform=windows tools=no target=release_debug bits=</span><span style="color:#d08770;">64
+</span><span>scons platform=windows tools=no target=release bits=</span><span style="color:#d08770;">64
+</span></code></pre>
+<p>With the export templates built, we can now export our Godot project.  Select Project &gt; Export.</p>
+<p><img src="/img/DecompilingGodotEncrypted/img2.png" alt="" /></p>
+<p>In the resulting window, select Add &gt; Windows Desktop.</p>
+<p><img src="/img/DecompilingGodotEncrypted/img3.png" alt="" /></p>
+<p>Under Options &gt; Custom Template, set the path for the Debug and Release templates:
+<img src="/img/DecompilingGodotEncrypted/img12.png" alt="" /></p>
+<p>Then we can set our encryption settings in the script tab:
+<img src="/img/DecompilingGodotEncrypted/img4.png" alt="" /></p>
+<p>Then we can export the project:
+<img src="/img/DecompilingGodotEncrypted/img5.png" alt="" /></p>
+<p>After exporting, we'll find the exported exe and pck files that we will attempt to reverse/extract.
+<img src="/img/DecompilingGodotEncrypted/img6.png" alt="" /></p>
+
+</section>
+
+
+            <div id="font_picker_container">
+                <button id="toggle_button">Pick a Font ▼</button>
+                <div id="font_picker_section">
+                    <input type="radio" id="font_anonymous" name="font" value="Anonymous Pro">
+                    <label for="font_anonymous">Anonymous Pro</label>
+                    <br>
+                    <input type="radio" id="font_lato" name="font" value="Lato">
+                    <label for="font_lato">Lato</label>
+                    <br>
+                    <input type="radio" id="font_lora" name="font" value="Lora">
+                    <label for="font_lora">Lora</label>
+                </div>
+            </div>
+        </main>
+    </div>
+</body>
+</html>

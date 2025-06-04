@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- <title>Murdoch's Blog</title> -->
+    <title> Creating a Runescape Reflection Bot from Scratch | Murdoch's Website </title>
+    <!-- Import fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Anonymous+Pro:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&family=Lora:ital,wght@0,400..700;1,400..700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/styles.css">
+    <link rel="stylesheet" href="/css/font_anonymous_pro.css" id="font_stylesheet">
+    <link rel="stylesheet" href="/css/prism.css">
+    <link rel="icon" type="image/png" href="/favicon.png">
+    <script src="/js/font_picker.js"></script>
+    <meta name="msvalidate.01" content="1B81B4B36B69521589792FCAE9AEFFD9" />
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><a href="/">Murdoch's Blog</a></h1>
+        </header>
+        
+        <main>
+            
+
+<section id="post-title">
+    <h2>Creating a Runescape Reflection Bot from Scratch</h2>
+    <div class="post-meta">
+        <span class="date">2024-05-05</span>
+        <span class="category">reversing</span>
+    </div>
+</section>
+
+<!-- Content needs to include the table of contents and page content -->
+<!-- Ideally we'd be able to split it off somehow -->
+
+<nav class="table-of-contents">
+    <h2>Contents</h2>
+    <ul>
+        
+        <li>
+            <a href="https://murdoch.website/reflection-bot/#preface">Preface</a>
+            
+        </li>
+        
+        <li>
+            <a href="https://murdoch.website/reflection-bot/#introduction">Introduction</a>
+            
+        </li>
+        
+        <li>
+            <a href="https://murdoch.website/reflection-bot/#prior-work">Prior Work</a>
+            
+        </li>
+        
+        <li>
+            <a href="https://murdoch.website/reflection-bot/#java-reflection">Java Reflection</a>
+            
+        </li>
+        
+        <li>
+            <a href="https://murdoch.website/reflection-bot/#technical-breakdown">Technical Breakdown</a>
+            
+            <ul>
+                
+                <li>
+                    <a href="https://murdoch.website/reflection-bot/#reflectionutils">ReflectionUtils</a>
+                </li>
+                
+                <li>
+                    <a href="https://murdoch.website/reflection-bot/#reflectionbot">ReflectionBot</a>
+                </li>
+                
+                <li>
+                    <a href="https://murdoch.website/reflection-bot/#botkeylistener">BotKeyListener</a>
+                </li>
+                
+            </ul>
+            
+        </li>
+        
+        <li>
+            <a href="https://murdoch.website/reflection-bot/#demonstration">Demonstration</a>
+            
+        </li>
+        
+        <li>
+            <a href="https://murdoch.website/reflection-bot/#further-work">Further Work</a>
+            
+        </li>
+        
+    </ul>
+</nav>
+
+
+<section id="post-content">
+    <h2 id="preface">Preface</h2>
+<p>Game hacking and botting were my primary introduction to programming and cybersecurity as a kid. I would listen to Defcon talks (like <a href="https://www.youtube.com/watch?v=KmwhrWxpViw">this</a> or <a href="https://www.youtube.com/watch?v=QoNdhlLPX-g">this</a>), read <a href="https://rshacking.wordpress.com/">old histories</a> of RuneScape hacking, and scroll through forums like UnknownCheats, totally rapt. I was excited by the idea that I would one day be able to understand these exploits of these seemingly impenetrable games that I was so familiar with. It wasn’t about wanting to cheat or make money from hacks for me – it was about the joy of understanding a trick or exploit alone. It was my excitement about learning game hacking that led me to <a href="https://www.google.ca/books/edition/_/1bR0DQEACAAJ?hl=en&amp;sa=X&amp;ved=2ahUKEwjp3oSxo_eFAxWlkIkEHZ--CjwQre8FegQIAxAb">start learning C++</a> in my early teens, after seeing a now deleted video from one “douggem” on learning game hacking.</p>
+<p>Despite being a RuneScape player in my teens and having an interest in these hacks, I was never able to figure out how RuneScape bots were written. While there were many public resources written about different types of bots and how you might write a bot for an existing client, there were little to no resources for how you would start from scratch. This project aims to create a (private server) RuneScape bot using Java’s reflection API to implement an “inventory dropper” – a bot designed to automatically drop all items from the player’s inventory. This is not only to demonstrate the process of bot creation, but also to fill a gap in the public availability of educational resources on RuneScape botting: to help a younger version of myself get a little farther in his hacking goals.</p>
+<h2 id="introduction">Introduction</h2>
+<p>The goal of this project is to write a RuneScape bot using Java’s reflection API. Reflection allows Java to access the data and methods of Java classes at runtime, allowing us to programmatically interact with the running game client. This project seeks to extend an archived tutorial from the EctoTalk forum, which demonstrated the basics of writing a reflection/injection bot client, but stopped short of applying those techniques to write an actual bot. This tutorial will focus only on using reflection towards the end of implementing an “inventory dropper” bot – automating the process of dropping all items in the player’s inventory. While simple, this will allow us to demonstrate how reflection can be strategically used to implement a bot using fields and methods discovered by reverse engineering the client.</p>
+<h2 id="prior-work">Prior Work</h2>
+<p>During my research for this project, the only resource I found that shows how you might begin to write a reflection bot from scratch was <a href="https://web.archive.org/web/20200219171455/https://ectotalk.com/index.php?threads%2Fultimate-guide-how-to-write-a-runescape-injection-bot.6%2F">this thread</a>, by a “Shenandoah”, on the now offline forum EctoTalk. While the post is about writing an injection bot, it also makes use of Java reflection to load the game’s client into our own process, giving us control over it. It is this code from this post that this project extends. Reading posts #1 and #2 up to the “Bytecode Basics” section can be considered required conceptual reading for this article.</p>
+<p>Like him, we’ll be using the open-source Runescape private server <a href="https://github.com/2006-Scape/2006Scape">2006scape</a> as the target for our bot.</p>
+<h2 id="java-reflection">Java Reflection</h2>
+<p>There are three main steps this bot must perform:</p>
+<ol>
+<li>Loading the game into a bot-controlled process</li>
+<li>Reading the inventory array and inventory interface position information to find the location of items on the screen</li>
+<li>Triggering drop events on each of the found items in the inventory</li>
+</ol>
+<p>We will implement these three steps using Java’s reflection API. The <a href="https://docs.oracle.com/javase/8/docs/api/java/lang/reflect/package-summary.html">reflection API</a> allows a program to access the fields and methods of loaded classes at runtime. I will now give you a high-level idea of how we can use reflection to implement of these steps:</p>
+<ol>
+<li>The core Game class for Runescape extends Applet (or a subclass of Applet). We can load this class and then use reflection to instantiate it. This gives us a running instance of the game, within our bot process, that we can further interact with using reflection.</li>
+<li>After finding the inventory array by reverse engineering the client – which is the trickiest part of the project – we can use reflection to make the field public and get its value. This is basically the same for finding the inventory positions.</li>
+<li>Drop events can be triggered in Runescape by shift-clicking on the items of a player’s inventory. We can programmatically create our own keyboard and mouse events to simulate those, using reflection to submit them directly to the applet’s handlers.</li>
+</ol>
+<h2 id="technical-breakdown">Technical Breakdown</h2>
+<p>The code for this project can be found <a href="https://github.com/murdoch3/DropperReflectionBot">here</a>.</p>
+<p>In implementing the bot, I used four classes: <a href="https://github.com/murdoch3/DropperReflectionBot/blob/main/src/main/java/org/example/Main.java">Main</a>, <a href="https://github.com/murdoch3/DropperReflectionBot/blob/main/src/main/java/org/example/ReflectionUtils.java">ReflectionUtils</a>, <a href="https://github.com/murdoch3/DropperReflectionBot/blob/main/src/main/java/org/example/ReflectionBot.java">ReflectionBot</a> and <a href="https://github.com/murdoch3/DropperReflectionBot/blob/main/src/main/java/org/example/BotKeyListener.java">BotKeyListener</a>. As Main simply creates an instance of ReflectionBot, I will skip describing it further. Let’s break the remaining down class by class.</p>
+<h3 id="reflectionutils">ReflectionUtils</h3>
+<p>ReflectionUtils provides three utility functions common to reflection operations that access fields or invoke methods. These functions save having to repeat the same code over and over again.</p>
+<h4 id="getfield">getField</h4>
+<pre data-lang="java" style="background-color:#2b303b;color:#c0c5ce;" class="language-java "><code class="language-java" data-lang="java"><span style="color:#b48ead;">public static </span><span style="color:#ebcb8b;">Field </span><span style="color:#bf616a;">getField</span><span>(</span><span style="color:#ebcb8b;">Class</span><span>&amp;lt</span><span style="background-color:#bf616a;color:#2b303b;">;</span><span>?&amp;gt; cl, </span><span style="color:#ebcb8b;">String</span><span> fieldName) throws
+</span><span style="color:#ebcb8b;">NoSuchFieldException </span><span>{
+</span><span>
+</span><span>    </span><span style="color:#ebcb8b;">Field</span><span> field = cl.</span><span style="color:#bf616a;">getDeclaredField</span><span>(fieldName);
+</span><span>
+</span><span>    field.</span><span style="color:#bf616a;">setAccessible</span><span>(</span><span style="color:#d08770;">true</span><span>);
+</span><span>
+</span><span>    </span><span style="color:#b48ead;">return</span><span> field;
+</span><span>
+</span><span>}
+</span></code></pre>
+<p>The first method, getField, takes a loaded class and a string fieldName, and returns a Field. The Field represents a variable attached to a class that we are accessing through reflection. This Field can later be used to get or set the field on an instance of that class. By setting the field as accessible, we are bypassing Java’s access checking for the field. For us, this means we can access private fields.</p>
+<h4 id="setfield">setField</h4>
+<pre data-lang="java" style="background-color:#2b303b;color:#c0c5ce;" class="language-java "><code class="language-java" data-lang="java"><span style="color:#b48ead;">public static</span><span> void </span><span style="color:#bf616a;">setField</span><span>(</span><span style="color:#ebcb8b;">Class</span><span>&lt;?&gt; cl, </span><span style="color:#ebcb8b;">String</span><span> fieldName, </span><span style="color:#ebcb8b;">Object</span><span> object, </span><span style="color:#ebcb8b;">Object</span><span> value) throws </span><span style="color:#ebcb8b;">NoSuchFieldException</span><span>, </span><span style="color:#ebcb8b;">IllegalAccessException </span><span>{
+</span><span>    </span><span style="color:#ebcb8b;">Field</span><span> field = *getField*(cl, fieldName);
+</span><span>    field.</span><span style="color:#bf616a;">set</span><span>(object, value);
+</span><span>}
+</span></code></pre>
+<p>The second method, setField, takes a loaded class, a string FieldName, an Object that is an instance of the class, and a value to set the field to on the object. This is basically just a wrapper around getField, with an additional call to the field’s set method. Note: if you wanted to get a field’s value on an object, you could use the field’s get method, similarly to the way set is used here.</p>
+<h4 id="invokemethod">invokeMethod</h4>
+<pre data-lang="java" style="background-color:#2b303b;color:#c0c5ce;" class="language-java "><code class="language-java" data-lang="java"><span style="color:#b48ead;">public static </span><span style="color:#ebcb8b;">Object </span><span style="color:#bf616a;">invokeMethod</span><span>(</span><span style="color:#ebcb8b;">Class</span><span>&lt;?&gt; cl, </span><span style="color:#ebcb8b;">String</span><span> methodName, </span><span style="color:#ebcb8b;">Class</span><span>&lt;?&gt;</span><span style="color:#b48ead;">[]</span><span> parameterTypes, </span><span style="color:#ebcb8b;">Object</span><span> object, </span><span style="color:#ebcb8b;">Object</span><span style="color:#b48ead;">[]</span><span> args) throws </span><span style="color:#ebcb8b;">NoSuchMethodException</span><span>, </span><span style="color:#ebcb8b;">InvocationTargetException</span><span>, </span><span style="color:#ebcb8b;">IllegalAccessException </span><span>{
+</span><span>
+</span><span>    </span><span style="color:#ebcb8b;">Method</span><span> method = cl.</span><span style="color:#bf616a;">getDeclaredMethod</span><span>(methodName, parameterTypes);
+</span><span>    method.</span><span style="color:#bf616a;">setAccessible</span><span>(</span><span style="color:#d08770;">true</span><span>);
+</span><span>    </span><span style="color:#b48ead;">return</span><span> method.</span><span style="color:#bf616a;">invoke</span><span>(object, args);
+</span><span>
+</span><span>}
+</span></code></pre>
+<p>The third method, invokeMethod, takes a loaded class, string methodName, a list of classes representing the parameter types, an object that is an instance of the class to invoke the method on, and a list of arguments corresponding to the parameters. Like with the fields, this method uses reflection to find the declared method with the given name and parameters and bypass access checks, but now also invokes it on the given object with the given arguments.</p>
+<h3 id="reflectionbot">ReflectionBot</h3>
+<p>The job of this class is to load the game client, instantiate its main game class, and to load the game applet into its own window. This part is largely taken, with modifications, from the original EctoTalk post. As such, I will only cover it briefly in this section.</p>
+<p>After loading the client’s JAR file (JAR files being used to distribute Java executables) we create an instantiate the client’s game class:</p>
+<pre data-lang="java" style="background-color:#2b303b;color:#c0c5ce;" class="language-java "><code class="language-java" data-lang="java"><span style="color:#65737e;">// Load Game class
+</span><span>gameClass = cl.</span><span style="color:#bf616a;">loadClass</span><span>(&quot;</span><span style="color:#a3be8c;">Game</span><span>&quot;);
+</span><span style="color:#ebcb8b;">Constructor</span><span>&lt;?&gt; gameClassInit = gameClass.</span><span style="color:#bf616a;">getDeclaredConstructor</span><span>();
+</span><span>gameClassInit.</span><span style="color:#bf616a;">setAccessible</span><span>(</span><span style="color:#d08770;">true</span><span>); </span><span style="color:#65737e;">// turn off access checking
+</span><span>applet = (</span><span style="color:#ebcb8b;">Applet</span><span>)gameClassInit.</span><span style="color:#bf616a;">newInstance</span><span>();
+</span></code></pre>
+<p>Then we can initialize our own JFrame, representing a window, and add this game applet to it. This will result in the game running within our own window.</p>
+<pre data-lang="java" style="background-color:#2b303b;color:#c0c5ce;" class="language-java "><code class="language-java" data-lang="java"><span style="color:#ebcb8b;">JFrame</span><span> frame = </span><span style="color:#b48ead;">new </span><span style="color:#ebcb8b;">JFrame</span><span>(&quot;</span><span style="color:#a3be8c;">Bot</span><span>&quot;);
+</span><span>frame.</span><span style="color:#bf616a;">setDefaultCloseOperation</span><span>(</span><span style="color:#ebcb8b;">JFrame</span><span>.*</span><span style="color:#d08770;">EXIT</span><span>\</span><span style="color:#d08770;">_ON</span><span>\</span><span style="color:#d08770;">_CLOSE</span><span>*);
+</span><span>frame.</span><span style="color:#bf616a;">setMinimumSize</span><span>(</span><span style="color:#b48ead;">new </span><span style="color:#ebcb8b;">Dimension</span><span>(</span><span style="color:#d08770;">765</span><span>+</span><span style="color:#d08770;">8</span><span>, </span><span style="color:#d08770;">503</span><span>+</span><span style="color:#d08770;">28</span><span>));
+</span><span>frame.</span><span style="color:#bf616a;">setLocationRelativeTo</span><span>(</span><span style="color:#d08770;">null</span><span>);
+</span><span>frame.</span><span style="color:#bf616a;">add</span><span>(applet);
+</span><span>frame.</span><span style="color:#bf616a;">setVisible</span><span>(</span><span style="color:#d08770;">true</span><span>);
+</span></code></pre>
+<p>Finally for the game class, we initialize its fields and call its parent’s init function, just as are done in the client’s main function. (Since we are skipping the main class by creating the game object directly, we have to recreate its steps.)</p>
+<pre data-lang="java" style="background-color:#2b303b;color:#c0c5ce;" class="language-java "><code class="language-java" data-lang="java"><span style="color:#65737e;">// Recreating 2006rebotted&#39;s main class
+</span><span style="color:#bf616a;">setField</span><span>(gameClass, &quot;</span><span style="color:#a3be8c;">nodeID</span><span>&quot;, applet, </span><span style="color:#d08770;">10</span><span>);
+</span><span style="color:#bf616a;">setField</span><span>(gameClass, &quot;</span><span style="color:#a3be8c;">portOff</span><span>&quot;, applet, </span><span style="color:#d08770;">0</span><span>);
+</span><span style="color:#bf616a;">invokeMethod</span><span>(gameClass, &quot;</span><span style="color:#a3be8c;">setHighMem</span><span>&quot;, </span><span style="color:#b48ead;">new </span><span style="color:#ebcb8b;">Class</span><span>[]{}, applet, </span><span style="color:#b48ead;">new </span><span style="color:#ebcb8b;">Object</span><span>[]{});
+</span><span>
+</span><span style="color:#bf616a;">setField</span><span>(gameClass, &quot;</span><span style="color:#a3be8c;">isMembers</span><span>&quot;, applet, </span><span style="color:#d08770;">true</span><span>);
+</span><span style="color:#ebcb8b;">Class</span><span>&lt;?&gt; signLink = cl.</span><span style="color:#bf616a;">loadClass</span><span>(&quot;</span><span style="color:#a3be8c;">Signlink</span><span>&quot;);
+</span><span style="color:#bf616a;">setField</span><span>(signLink, &quot;</span><span style="color:#a3be8c;">storeid</span><span>&quot;, signLink, </span><span style="color:#d08770;">32</span><span>);
+</span><span style="color:#bf616a;">invokeMethod</span><span>(signLink, &quot;</span><span style="color:#a3be8c;">startpriv</span><span>&quot;, </span><span style="color:#b48ead;">new </span><span style="color:#ebcb8b;">Class</span><span>[]{</span><span style="color:#ebcb8b;">InetAddress</span><span>.</span><span style="color:#bf616a;">class</span><span>}, signLink, </span><span style="color:#b48ead;">new </span><span style="color:#ebcb8b;">Object</span><span>[]{</span><span style="color:#ebcb8b;">InetAddress</span><span>.</span><span style="color:#bf616a;">getLocalHost</span><span>()});
+</span><span>
+</span><span style="color:#65737e;">// calling this RSApplet method
+</span><span style="color:#bf616a;">invokeMethod</span><span>(gameClass.</span><span style="color:#bf616a;">getSuperclass</span><span>(), &quot;</span><span style="color:#a3be8c;">initClientFrame</span><span>&quot;, </span><span style="color:#b48ead;">new </span><span style="color:#ebcb8b;">Class</span><span>[]{</span><span style="color:#b48ead;">int</span><span>.</span><span style="color:#bf616a;">class</span><span>, </span><span style="color:#b48ead;">int</span><span>.</span><span style="color:#bf616a;">class</span><span>}, applet, </span><span style="color:#b48ead;">new </span><span style="color:#ebcb8b;">Object</span><span>[]{</span><span style="color:#d08770;">503</span><span>, </span><span style="color:#d08770;">765</span><span>});
+</span></code></pre>
+<p>At this point the applet has been created successfully, and the game will run like normal. The last step is to attach our own key listener to trigger on key events. This will be the entry point for our bot functionality.</p>
+<pre data-lang="java" style="background-color:#2b303b;color:#c0c5ce;" class="language-java "><code class="language-java" data-lang="java"><span style="color:#ebcb8b;">BotKeyListener</span><span> botKeyListener = </span><span style="color:#b48ead;">new </span><span style="color:#ebcb8b;">BotKeyListener</span><span>(</span><span style="color:#bf616a;">this</span><span>);
+</span><span style="color:#bf616a;">invokeMethod</span><span>(</span><span style="color:#ebcb8b;">Component</span><span>.</span><span style="color:#bf616a;">class</span><span>, &quot;</span><span style="color:#a3be8c;">addKeyListener</span><span>&quot;, </span><span style="color:#b48ead;">new </span><span style="color:#ebcb8b;">Class</span><span>[]{</span><span style="color:#ebcb8b;">KeyListener</span><span>.</span><span style="color:#bf616a;">class</span><span>}, applet, </span><span style="color:#b48ead;">new </span><span style="color:#ebcb8b;">Object</span><span>[]{botKeyListener});
+</span></code></pre>
+<h3 id="botkeylistener">BotKeyListener</h3>
+<p>BotKeyListener is the class that does the actual work of the bot. It will listen for key presses on the applet, and upon detecting the arbitrary start key, will use reflection to drop the items in the player’s inventory. Reflection is used to submit the bot’s virtual key and mouse events directly to the game applet’s key and mouse listeners. Simulating user input in this way is the simplest way I found to trigger actions with the game – there does not appear to be any single function that performs an item drop that we could call.</p>
+<p>An input method leaves us with having to find out what entities to perform inputs on. In this case, I needed to find where the inventory field and inventory interface information was being stored in the client. From this, we would be able to determine the positions of each item in the player’s inventory and use key and mouse events to trigger a drop on it.</p>
+<h4 id="finding-the-inventory-fields">Finding the Inventory Fields</h4>
+<p>While it was tricky to determine exactly how to submit the mouse events to the game applet, most of the work of this bot was reverse engineering the client to find the inventory fields. I wanted to find two main things:</p>
+<ul>
+<li>The inventory field: I was expecting to find an array or list that would represent the items in the player’s inventory. This would allow us to reflectively find which slots of the inventory had items in it, making the bot more efficient.</li>
+<li>The inventory interface class/fields: This would be the implementation for the inventory’s GUI in the game. Finding this would allow us to reflectively find where on the screen we would need to click.</li>
+</ul>
+<p>Starting with a clone of the <a href="https://github.com/2006-Scape/2006Scape">game’s repo</a>, I grep’d for “inventory”:</p>
+<p><img src="/img/CreatingABotFromScratch/image2.png" alt="" /></p>
+<p>Seeing that class9_1 in Game has an “isInventoryInterface” field, I went into the class to find what class9_1 was:</p>
+<pre data-lang="java" style="background-color:#2b303b;color:#c0c5ce;" class="language-java "><code class="language-java" data-lang="java"><span style="color:#65737e;">// ...
+</span><span style="color:#ebcb8b;">RSInterface</span><span> class9_1 = </span><span style="color:#ebcb8b;">RSInterface</span><span>.interfaceCache[class9.children[l1]];
+</span><span style="color:#65737e;">// ...
+</span></code></pre>
+<p>Looking now at the RSInterface class, we find that it has an inv[] array and a method swapInventoryItems:</p>
+<pre data-lang="java" style="background-color:#2b303b;color:#c0c5ce;" class="language-java "><code class="language-java" data-lang="java"><span style="color:#b48ead;">public</span><span> void </span><span style="color:#bf616a;">swapInventoryItems</span><span>(</span><span style="color:#b48ead;">int</span><span> i, </span><span style="color:#b48ead;">int</span><span> j) {
+</span><span>    </span><span style="color:#b48ead;">int</span><span> k = inv[i];
+</span><span>    inv[i] = inv[j];
+</span><span>    inv[j] = k;
+</span><span>    k = invStackSizes[i];
+</span><span>    invStackSizes[i] = invStackSizes[j];
+</span><span>    invStackSizes[j] = k;
+</span><span>}
+</span></code></pre>
+<p>To find out if these are the right fields, and how we can get the right RSInterface, we can set a breakpoint on the first line of this function, and then try swapping two items. After the breakpoint hits, we see:</p>
+<p><img src="/img/CreatingABotFromScratch/image5.png" alt="" /></p>
+<p>The inv array is 28 items long, which is the maximum number of items in the player’s inventory. Further, the integers correspond to the items in my character’s inventory – the item ID 441 represents Iron Ore, and 0 represents an empty slot. We now know that if we can find the correct RSInterface, we can access the player’s current inventory reflectively.</p>
+<p>To find the correct interface, we can move up the call stack to mainGameProcessor. The call to swapInventoryItems is on a class9:<br />
+<img src="/img/CreatingABotFromScratch/image1.png" alt="" /></p>
+<p>Which is defined by:</p>
+<p><img src="/img/CreatingABotFromScratch/image4.png" alt="" /></p>
+<p>3214 is the index into the static field interfaceCache used to access the inventory’s RSInterface. Through the rest of my testing, I confirmed that this index is consistently used between runs and throughout the code. With this, we have found a way to access the inventory interface and the player’s inventory reflectively.</p>
+<p>Some GUI information is also attached to this class, including the width, height, invSpritePadX and invSpritePadY, but we still need to find out how to find the start coordinates of the inventory GUI reflectively. This can be found by breaking on the following lines of the buildInterfaceMenu:</p>
+<p><img src="/img/CreatingABotFromScratch/image3.png" alt="" /></p>
+<p>where i2 and j2 are the inventory interface’s x and y coordinates. As this is being calculated outside of the class using a parent interface, I opted to just hardcode these values for the bot.</p>
+<h4 id="performing-the-inventory-drop">Performing the Inventory Drop</h4>
+<p>Now that we have found our method of input and our inventory interface fields, we can put the bot together.</p>
+<p>The work of the bot is in the keyPressed function. The bot starts on a key pressed event for the forward slash key.</p>
+<pre data-lang="java" style="background-color:#2b303b;color:#c0c5ce;" class="language-java "><code class="language-java" data-lang="java"><span style="color:#b48ead;">public</span><span> void </span><span style="color:#bf616a;">keyPressed</span><span>(</span><span style="color:#ebcb8b;">KeyEvent</span><span> e) {
+</span><span>    </span><span style="color:#b48ead;">if </span><span>(e.</span><span style="color:#bf616a;">getKeyChar</span><span>() == &#39;</span><span style="color:#a3be8c;">/</span><span>&#39;) {
+</span><span>        </span><span style="color:#65737e;">// ...
+</span><span>    }
+</span><span>}
+</span></code></pre>
+<p>The first event we’ll send is a key down event for the shift key. When you click on an inventory item with the shift key pressed, the clicked item will be dropped.</p>
+<pre data-lang="java" style="background-color:#2b303b;color:#c0c5ce;" class="language-java "><code class="language-java" data-lang="java"><span style="color:#65737e;">// Send shift down. With shift-drop enabled, clicking on an item will cause it to be dropped.
+</span><span style="color:#ebcb8b;">KeyEvent</span><span> keyEvent = </span><span style="color:#b48ead;">new </span><span style="color:#ebcb8b;">KeyEvent</span><span>(bot.applet, </span><span style="color:#d08770;">0</span><span>, </span><span style="color:#d08770;">0</span><span>, </span><span style="color:#d08770;">0</span><span>, </span><span style="color:#ebcb8b;">KeyEvent</span><span>.</span><span style="color:#d08770;">VK_SHIFT</span><span>, </span><span style="color:#ebcb8b;">KeyEvent</span><span>.</span><span style="color:#d08770;">CHAR_UNDEFINED</span><span>);
+</span><span style="color:#b48ead;">for </span><span>(</span><span style="color:#ebcb8b;">KeyListener</span><span> kl : bot.applet.</span><span style="color:#bf616a;">getKeyListeners</span><span>()) {
+</span><span>    kl.</span><span style="color:#bf616a;">keyPressed</span><span>(keyEvent);
+</span><span>}
+</span></code></pre>
+<p>Then, we’ll use reflection to load the interfaceCache from the RSInterface class and then index that to get the inventory interface. We’ll use that to access all of the fields identified in the “Finding Inventory Fields” section.</p>
+<pre data-lang="java" style="background-color:#2b303b;color:#c0c5ce;" class="language-java "><code class="language-java" data-lang="java"><span style="color:#65737e;">// Load the client&#39;s inventory interface
+</span><span>
+</span><span style="color:#ebcb8b;">Class</span><span>&lt;?&gt; rsInterfaceClass = bot.</span><span style="color:#bf616a;">loadClass</span><span>(&quot;</span><span style="color:#a3be8c;">RSInterface</span><span>&quot;);
+</span><span style="color:#ebcb8b;">Field</span><span> interfaceCacheField = *getField*(rsInterfaceClass, &quot;</span><span style="color:#a3be8c;">interfaceCache</span><span>&quot;);
+</span><span style="color:#ebcb8b;">Object</span><span style="color:#b48ead;">[]</span><span> interfaceCache = (</span><span style="color:#ebcb8b;">Object</span><span style="color:#b48ead;">[]</span><span>)
+</span><span>interfaceCacheField.</span><span style="color:#bf616a;">get</span><span>(bot.applet);
+</span><span style="color:#ebcb8b;">Object</span><span> invInterface = interfaceCache[</span><span style="color:#d08770;">3214</span><span>];
+</span><span>
+</span><span style="color:#65737e;">// Get inventory contents
+</span><span style="color:#ebcb8b;">Field</span><span> invField = </span><span style="color:#bf616a;">getField</span><span>(rsInterfaceClass, &quot;</span><span style="color:#a3be8c;">inv</span><span>&quot;);
+</span><span style="color:#b48ead;">int[]</span><span> inv = (</span><span style="color:#b48ead;">int[]</span><span>)invField.</span><span style="color:#bf616a;">get</span><span>(invInterface);
+</span><span>
+</span><span style="color:#ebcb8b;">Field</span><span> fInterfaceHeight = </span><span style="color:#bf616a;">getField</span><span>(rsInterfaceClass, &quot;</span><span style="color:#a3be8c;">height</span><span>&quot;);
+</span><span style="color:#ebcb8b;">Field</span><span> fInterfaceWidth = </span><span style="color:#bf616a;">getField</span><span>(rsInterfaceClass, &quot;</span><span style="color:#a3be8c;">width</span><span>&quot;);
+</span><span style="color:#ebcb8b;">Field</span><span> fInterfaceSpritePadX = </span><span style="color:#bf616a;">getField</span><span>(rsInterfaceClass, &quot;</span><span style="color:#a3be8c;">invSpritePadX</span><span>&quot;);
+</span><span style="color:#ebcb8b;">Field</span><span> fInterfaceSpritePadY = </span><span style="color:#bf616a;">getField</span><span>(rsInterfaceClass, &quot;</span><span style="color:#a3be8c;">invSpritePadY</span><span>&quot;);
+</span><span style="color:#b48ead;">int</span><span> interfaceStartX = </span><span style="color:#d08770;">569</span><span>; </span><span style="color:#65737e;">// int i2 = class9.childX\[l1\] + i;
+</span><span style="color:#b48ead;">int</span><span> interfaceStartY = </span><span style="color:#d08770;">213</span><span>; </span><span style="color:#65737e;">// int j2 = class9.childY\[l1\] + l - j1;
+</span><span style="color:#b48ead;">int</span><span> invWidth = (</span><span style="color:#b48ead;">int</span><span>)fInterfaceWidth.</span><span style="color:#bf616a;">get</span><span>(invInterface);
+</span><span style="color:#b48ead;">int</span><span> invHeight = (</span><span style="color:#b48ead;">int</span><span>)fInterfaceHeight.</span><span style="color:#bf616a;">get</span><span>(invInterface);
+</span><span style="color:#b48ead;">int</span><span> timeBetweenActions = </span><span style="color:#d08770;">100</span><span>;
+</span></code></pre>
+<p>Now we’ll trigger click events to drop each item in the inventory. We’ll loop over the rows and columns using the height and width fields of the inventory interface. We’ll use the inventory array to check if there is an item in the current slot. Then we’ll calculate the click location, offset from the top-left corner of the slot. Finally, we’ll trigger the drop by directly calling the mouseMoved, mousePressed, and mouseReleased methods reflectively on the game’s RSApplet class. The reason why a mouseMoved event has to be sent is that the interface has to be loaded, which only occurs when the mouse moves over the inventory.</p>
+<pre data-lang="java" style="background-color:#2b303b;color:#c0c5ce;" class="language-java "><code class="language-java" data-lang="java"><span style="color:#b48ead;">for </span><span>(</span><span style="color:#b48ead;">int</span><span> r = </span><span style="color:#d08770;">0</span><span>; r &lt; invHeight; r++) {
+</span><span>    </span><span style="color:#b48ead;">for </span><span>(</span><span style="color:#b48ead;">int</span><span> c = </span><span style="color:#d08770;">0</span><span>; c &lt; invWidth; c++) {
+</span><span>        </span><span style="color:#65737e;">// If there is not an item in this slot, move on
+</span><span>        </span><span style="color:#b48ead;">if </span><span>(inv[r*invWidth + c] == </span><span style="color:#d08770;">0</span><span>) {
+</span><span>            </span><span style="color:#b48ead;">continue</span><span>;
+</span><span>        }
+</span><span>
+</span><span>        </span><span style="color:#65737e;">// Calculate item sprite location
+</span><span>        </span><span style="color:#b48ead;">int</span><span> invX = interfaceStartX + c * (</span><span style="color:#d08770;">32 </span><span>+ (</span><span style="color:#b48ead;">int</span><span>)fInterfaceSpritePadX.</span><span style="color:#bf616a;">get</span><span>(invInterface));
+</span><span>        </span><span style="color:#b48ead;">int</span><span> invY = interfaceStartY + r * (</span><span style="color:#d08770;">32 </span><span>+ (</span><span style="color:#b48ead;">int</span><span>)fInterfaceSpritePadY.</span><span style="color:#bf616a;">get</span><span>(invInterface));
+</span><span>
+</span><span>        </span><span style="color:#65737e;">// Click in the middle of the sprite
+</span><span>        </span><span style="color:#b48ead;">int</span><span> clickX = invX + </span><span style="color:#d08770;">16</span><span>;
+</span><span>        </span><span style="color:#b48ead;">int</span><span> clickY = invY + </span><span style="color:#d08770;">16</span><span>;
+</span><span>
+</span><span>        </span><span style="color:#65737e;">// Generate mouse move event to the inventory
+</span><span>        </span><span style="color:#ebcb8b;">MouseEvent</span><span> mouseMoveEvent = </span><span style="color:#b48ead;">new </span><span style="color:#ebcb8b;">MouseEvent</span><span>(bot.applet, </span><span style="color:#ebcb8b;">MouseEvent</span><span>.</span><span style="color:#d08770;">MOUSE_MOVED</span><span>, </span><span style="color:#d08770;">0</span><span>, </span><span style="color:#d08770;">0</span><span>, clickX, clickY, </span><span style="color:#d08770;">1</span><span>, </span><span style="color:#d08770;">false</span><span>);
+</span><span>        </span><span style="color:#bf616a;">invokeMethod</span><span>(bot.gameClass.</span><span style="color:#bf616a;">getSuperclass</span><span>(), &quot;</span><span style="color:#a3be8c;">mouseMoved</span><span>&quot;, </span><span style="color:#b48ead;">new </span><span style="color:#ebcb8b;">Class</span><span>[]{</span><span style="color:#ebcb8b;">MouseEvent</span><span>.</span><span style="color:#bf616a;">class</span><span>}, bot.applet, </span><span style="color:#b48ead;">new </span><span style="color:#ebcb8b;">Object</span><span>[]{mouseMoveEvent});
+</span><span>        </span><span style="color:#ebcb8b;">Thread</span><span>.</span><span style="color:#bf616a;">sleep</span><span>(timeBetweenActions);
+</span><span>
+</span><span>        </span><span style="color:#65737e;">// Mouse pressed event
+</span><span>        </span><span style="color:#ebcb8b;">MouseEvent</span><span> mouseEvent = </span><span style="color:#b48ead;">new </span><span style="color:#ebcb8b;">MouseEvent</span><span>(bot.applet, </span><span style="color:#ebcb8b;">MouseEvent</span><span>.</span><span style="color:#d08770;">MOUSE_CLICKED</span><span>, </span><span style="color:#d08770;">0</span><span>, </span><span style="color:#d08770;">0</span><span>, clickX, clickY, </span><span style="color:#d08770;">1</span><span>, </span><span style="color:#d08770;">false</span><span>);
+</span><span>        </span><span style="color:#bf616a;">invokeMethod</span><span>(bot.gameClass.</span><span style="color:#bf616a;">getSuperclass</span><span>(), &quot;</span><span style="color:#a3be8c;">mousePressed</span><span>&quot;, </span><span style="color:#b48ead;">new </span><span style="color:#ebcb8b;">Class</span><span>[]{</span><span style="color:#ebcb8b;">MouseEvent</span><span>.</span><span style="color:#bf616a;">class</span><span>}, bot.applet, </span><span style="color:#b48ead;">new </span><span style="color:#ebcb8b;">Object</span><span>[]{mouseEvent});
+</span><span>        </span><span style="color:#ebcb8b;">Thread</span><span>.</span><span style="color:#bf616a;">sleep</span><span>(timeBetweenActions);
+</span><span>
+</span><span>        </span><span style="color:#65737e;">// Mouse released event
+</span><span>        </span><span style="color:#ebcb8b;">MouseEvent</span><span> mouseReleaseEvent = </span><span style="color:#b48ead;">new </span><span style="color:#ebcb8b;">MouseEvent</span><span>(bot.applet, </span><span style="color:#ebcb8b;">MouseEvent</span><span>.</span><span style="color:#d08770;">MOUSE_RELEASED</span><span>, </span><span style="color:#d08770;">0</span><span>, </span><span style="color:#d08770;">0</span><span>, clickX, clickY, </span><span style="color:#d08770;">1</span><span>, </span><span style="color:#d08770;">false</span><span>);
+</span><span>        </span><span style="color:#bf616a;">invokeMethod</span><span>(bot.applet.</span><span style="color:#bf616a;">getClass</span><span>().</span><span style="color:#bf616a;">getSuperclass</span><span>(), &quot;</span><span style="color:#a3be8c;">mouseReleased</span><span>&quot;, </span><span style="color:#b48ead;">new </span><span style="color:#ebcb8b;">Class</span><span>[]{</span><span style="color:#ebcb8b;">MouseEvent</span><span>.</span><span style="color:#bf616a;">class</span><span>}, bot.applet, </span><span style="color:#b48ead;">new </span><span style="color:#ebcb8b;">Object</span><span>[]{mouseReleaseEvent});
+</span><span>        </span><span style="color:#ebcb8b;">Thread</span><span>.</span><span style="color:#bf616a;">sleep</span><span>(timeBetweenActions);
+</span><span>    }
+</span><span>}
+</span></code></pre>
+<p>Finally, we’ll release the shift key.</p>
+<pre data-lang="java" style="background-color:#2b303b;color:#c0c5ce;" class="language-java "><code class="language-java" data-lang="java"><span style="color:#65737e;">// Release shift
+</span><span>keyEvent = </span><span style="color:#b48ead;">new </span><span style="color:#ebcb8b;">KeyEvent</span><span>(bot.applet, </span><span style="color:#d08770;">0</span><span>, </span><span style="color:#d08770;">0</span><span>, </span><span style="color:#d08770;">0</span><span>, </span><span style="color:#ebcb8b;">KeyEvent</span><span>.</span><span style="color:#d08770;">VK_SHIFT</span><span>, </span><span style="color:#ebcb8b;">KeyEvent</span><span>.</span><span style="color:#d08770;">CHAR_UNDEFINED</span><span>);
+</span><span style="color:#b48ead;">for </span><span>(</span><span style="color:#ebcb8b;">KeyListener</span><span> kl : bot.applet.</span><span style="color:#bf616a;">getKeyListeners</span><span>()) {
+</span><span>    kl.</span><span style="color:#bf616a;">keyReleased</span><span>(keyEvent);
+</span><span>}
+</span></code></pre>
+<h2 id="demonstration">Demonstration</h2>
+<p><img src="/img/CreatingABotFromScratch/image6.gif" alt="" /></p>
+<h2 id="further-work">Further Work</h2>
+<p>This “inventory dropper” was originally part of a larger mining bot that would mine a given ore until the character’s inventory was full, drop all of the items, and then start again. I decided to tighten the scope of this project to complete it in a more reasonable period of time. Extending this solution to perform mining would require being able to find the desired ore objects in the scene. The reverse engineering to find these ores has not been completed yet, and appears to be considerably more complex than just finding the inventory data due to the obfuscation, coupling, and complexity of the client. As such, it would be a worthwhile extension to this project, and would contribute greatly to public resources on creating bots from scratch.</p>
+
+</section>
+
+
+            <div id="font_picker_container">
+                <button id="toggle_button">Pick a Font ▼</button>
+                <div id="font_picker_section">
+                    <input type="radio" id="font_anonymous" name="font" value="Anonymous Pro">
+                    <label for="font_anonymous">Anonymous Pro</label>
+                    <br>
+                    <input type="radio" id="font_lato" name="font" value="Lato">
+                    <label for="font_lato">Lato</label>
+                    <br>
+                    <input type="radio" id="font_lora" name="font" value="Lora">
+                    <label for="font_lora">Lora</label>
+                </div>
+            </div>
+        </main>
+    </div>
+</body>
+</html>

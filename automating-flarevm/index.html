@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- <title>Murdoch's Blog</title> -->
+    <title> Automate FlareVM with Vagrant | Murdoch's Website </title>
+    <!-- Import fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Anonymous+Pro:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&family=Lora:ital,wght@0,400..700;1,400..700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/styles.css">
+    <link rel="stylesheet" href="/css/font_anonymous_pro.css" id="font_stylesheet">
+    <link rel="stylesheet" href="/css/prism.css">
+    <link rel="icon" type="image/png" href="/favicon.png">
+    <script src="/js/font_picker.js"></script>
+    <meta name="msvalidate.01" content="1B81B4B36B69521589792FCAE9AEFFD9" />
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><a href="/">Murdoch's Blog</a></h1>
+        </header>
+        
+        <main>
+            
+
+<section id="post-title">
+    <h2>Automate FlareVM with Vagrant</h2>
+    <div class="post-meta">
+        <span class="date">2024-08-22</span>
+        <span class="category">automation, malware-analysis</span>
+    </div>
+</section>
+
+<!-- Content needs to include the table of contents and page content -->
+<!-- Ideally we'd be able to split it off somehow -->
+
+<nav class="table-of-contents">
+    <h2>Contents</h2>
+    <ul>
+        
+        <li>
+            <a href="https://murdoch.website/automating-flarevm/#introduction">Introduction</a>
+            
+        </li>
+        
+        <li>
+            <a href="https://murdoch.website/automating-flarevm/#vagrantfile">Vagrantfile</a>
+            
+            <ul>
+                
+                <li>
+                    <a href="https://murdoch.website/automating-flarevm/#usage">Usage:</a>
+                </li>
+                
+            </ul>
+            
+        </li>
+        
+        <li>
+            <a href="https://murdoch.website/automating-flarevm/#how-it-works">How It Works</a>
+            
+        </li>
+        
+        <li>
+            <a href="https://murdoch.website/automating-flarevm/#problems-faced">Problems Faced</a>
+            
+            <ul>
+                
+                <li>
+                    <a href="https://murdoch.website/automating-flarevm/#vagrant-virtualbox-the-dhcp-on-this-adapter-is-incompatible-with-the-dhcp-settings">Vagrant&#x2F;Virtualbox: The DHCP on this adapter is incompatible with the DHCP settings</a>
+                </li>
+                
+                <li>
+                    <a href="https://murdoch.website/automating-flarevm/#vagrant-stuck-on-preparing-smb-shared-folders">Vagrant Stuck on Preparing SMB Shared Folders</a>
+                </li>
+                
+                <li>
+                    <a href="https://murdoch.website/automating-flarevm/#set-executionpolicy-the-setting-is-overridden-by-a-policy-defined-at-a-more-specific-scope">Set-ExecutionPolicy: The Setting is Overridden by a Policy Defined at a More Specific Scope</a>
+                </li>
+                
+            </ul>
+            
+        </li>
+        
+        <li>
+            <a href="https://murdoch.website/automating-flarevm/#conclusion">Conclusion</a>
+            
+        </li>
+        
+    </ul>
+</nav>
+
+
+<section id="post-content">
+    <h2 id="introduction">Introduction</h2>
+<p>Whenever I have to handle malicious files, write malicious code, or perform malware analysis and reverse engineering, I like to use Mandiant's FlareVM because it provides all of tools that I need out of the box.</p>
+<p>The only problem with Flare is that the installation process is manual and time-consuming. It requires users to:</p>
+<ol>
+<li>Create a Windows 10 virtual machine</li>
+<li>Complete the Windows 10 installation process</li>
+<li>Follow a process to disable Windows Defender in the settings and group policy editor</li>
+<li>Download, unblock, and execute the Flare install PowerShell script</li>
+<li>Babysit Flare during its installation (make choices when prompted, login after reboots, etc.)</li>
+</ol>
+<p>I myself have gone through this process more than a dozen times in the recent years, a result of moving between systems. This results in wasted time that could have been spent on analysis and research.</p>
+<h2 id="vagrantfile">Vagrantfile</h2>
+<p>To solve this problem, I have spent the past few days creating a Vagrantfile to automate the provisioning and installation of FlareVM on HyperV. I have managed to make the installation completely hands-off. The complete code can be seen below:</p>
+<pre data-lang="ruby" style="background-color:#2b303b;color:#c0c5ce;" class="language-ruby "><code class="language-ruby" data-lang="ruby"><span>$</span><span style="color:#bf616a;">autologon </span><span>= &lt;&lt;-SCRIPT
+</span><span style="color:#a3be8c;">Set-ItemProperty -Path &quot;HKLM:/SOFTWARE/Microsoft/Windows NT/CurrentVersion</span><span style="color:#96b5b4;">\\</span><span style="color:#a3be8c;">Winlogon&quot; -Name &quot;AutoAdminLogon&quot; -Value &quot;1&quot;
+</span><span style="color:#a3be8c;">wget https://download.sysinternals.com/files/AutoLogon.zip -O C:</span><span style="color:#96b5b4;">\\</span><span style="color:#a3be8c;">ProgramData</span><span style="color:#96b5b4;">\\</span><span style="color:#a3be8c;">AutoLogon.zip
+</span><span style="color:#a3be8c;">Expand-Archive C:</span><span style="color:#96b5b4;">\\</span><span style="color:#a3be8c;">ProgramData</span><span style="color:#96b5b4;">\\</span><span style="color:#a3be8c;">AutoLogon.zip -DestinationPath C:</span><span style="color:#96b5b4;">\\</span><span style="color:#a3be8c;">ProgramData</span><span style="color:#96b5b4;">\\</span><span style="color:#a3be8c;">AutoLogon
+</span><span style="color:#a3be8c;">C:/ProgramData/AutoLogon/Autologon64.exe &quot;vagrant&quot; &quot;FLAREVM&quot; &quot;vagrant&quot; /accepteula
+</span><span>SCRIPT
+</span><span>
+</span><span>$</span><span style="color:#bf616a;">disable_defender </span><span>= &lt;&lt;-SCRIPT 
+</span><span style="color:#a3be8c;">wget https://github.com/ionuttbara/windows-defender-remover/archive/refs/heads/main.zip -O C:</span><span style="color:#96b5b4;">\\</span><span style="color:#a3be8c;">ProgramData</span><span style="color:#96b5b4;">\\</span><span style="color:#a3be8c;">main.zip
+</span><span style="color:#a3be8c;">Expand-Archive C:</span><span style="color:#96b5b4;">\\</span><span style="color:#a3be8c;">ProgramData</span><span style="color:#96b5b4;">\\</span><span style="color:#a3be8c;">main.zip -DestinationPath C:</span><span style="color:#96b5b4;">\\</span><span style="color:#a3be8c;">ProgramData
+</span><span style="color:#a3be8c;">C:</span><span style="color:#96b5b4;">\\</span><span style="color:#a3be8c;">ProgramData</span><span style="color:#96b5b4;">\\</span><span style="color:#a3be8c;">windows-defender-remover-main</span><span style="color:#96b5b4;">\\</span><span style="color:#a3be8c;">Script_Run.bat y
+</span><span>SCRIPT
+</span><span>
+</span><span>$</span><span style="color:#bf616a;">script </span><span>= &lt;&lt;-SCRIPT
+</span><span style="color:#a3be8c;">Invoke-WebRequest -Uri &quot;https://raw.githubusercontent.com/murdoch3/flare-vm/main/install.ps1&quot; -OutFile &quot;$env:USERPROFILE</span><span style="color:#96b5b4;">\\</span><span style="color:#a3be8c;">Desktop</span><span style="color:#96b5b4;">\\</span><span style="color:#a3be8c;">install.ps1&quot;
+</span><span style="color:#a3be8c;">Invoke-WebRequest -Uri &quot;https://raw.githubusercontent.com/murdoch3/flare-vm/main/config.xml&quot; -OutFile &quot;$env:USERPROFILE</span><span style="color:#96b5b4;">\\</span><span style="color:#a3be8c;">Desktop</span><span style="color:#96b5b4;">\\</span><span style="color:#a3be8c;">config.xml&quot;
+</span><span style="color:#a3be8c;">Unblock-File &quot;$env:USERPROFILE</span><span style="color:#96b5b4;">\\</span><span style="color:#a3be8c;">Desktop</span><span style="color:#96b5b4;">\\</span><span style="color:#a3be8c;">install.ps1&quot;
+</span><span style="color:#a3be8c;">Set-ExecutionPolicy Unrestricted -Scope Process -Force
+</span><span style="color:#a3be8c;">Set-ExecutionPolicy Unrestricted -Scope CurrentUser -Force
+</span><span style="color:#a3be8c;">Set-ExecutionPolicy Unrestricted -Scope LocalMachine -Force
+</span><span style="color:#a3be8c;">&amp;&quot;$env:USERPROFILE</span><span style="color:#96b5b4;">\\</span><span style="color:#a3be8c;">Desktop</span><span style="color:#96b5b4;">\\</span><span style="color:#a3be8c;">install.ps1&quot; -customConfig  &quot;$env:USERPROFILE</span><span style="color:#96b5b4;">\\</span><span style="color:#a3be8c;">Desktop</span><span style="color:#96b5b4;">\\</span><span style="color:#a3be8c;">config.xml&quot; -password vagrant -noWait -noGui
+</span><span>SCRIPT
+</span><span>
+</span><span style="color:#ebcb8b;">Vagrant</span><span>.configure(&quot;</span><span style="color:#a3be8c;">2</span><span>&quot;) </span><span style="color:#b48ead;">do </span><span>|</span><span style="color:#bf616a;">config</span><span>|
+</span><span>  config.vm.box = &quot;</span><span style="color:#a3be8c;">gusztavvargadr/windows-10</span><span>&quot;
+</span><span>  config.vm.hostname = &quot;</span><span style="color:#a3be8c;">FlareVM</span><span>&quot;
+</span><span>  config.vm.synced_folder &#39;</span><span style="color:#a3be8c;">.</span><span>&#39;, &#39;</span><span style="color:#a3be8c;">/vagrant</span><span>&#39;, </span><span style="color:#a3be8c;">disabled: </span><span style="color:#d08770;">true
+</span><span>  
+</span><span>  config.vm.provider &quot;</span><span style="color:#a3be8c;">hyperv</span><span>&quot; </span><span style="color:#b48ead;">do </span><span>|</span><span style="color:#bf616a;">vb</span><span>|
+</span><span>    vb.memory = </span><span style="color:#d08770;">5000
+</span><span>    vb.cpus = </span><span style="color:#d08770;">4
+</span><span>  </span><span style="color:#b48ead;">end
+</span><span>  
+</span><span>  </span><span style="color:#65737e;"># Debugged using https://stackoverflow.com/questions/49547740/what-does-this-vagrant-error-mean-and-how-do-you-fix-it-for-public-network-an
+</span><span>  config.vm.network &quot;</span><span style="color:#a3be8c;">private_network</span><span>&quot;, </span><span style="color:#a3be8c;">type: </span><span>&quot;</span><span style="color:#a3be8c;">dhcp</span><span>&quot;, </span><span style="color:#a3be8c;">netmask: </span><span>&quot;</span><span style="color:#a3be8c;">255.255.255.0</span><span>&quot;, </span><span style="color:#a3be8c;">dhcp_ip:</span><span>&quot;</span><span style="color:#a3be8c;">192.168.56.100</span><span>&quot;, </span><span style="color:#a3be8c;">dhcp_lower: </span><span>&quot;</span><span style="color:#a3be8c;">192.168.56.101</span><span>&quot;, </span><span style="color:#a3be8c;">:dhcp_upper</span><span>=&gt;&quot;</span><span style="color:#a3be8c;">192.168.56.254</span><span>&quot;
+</span><span>  
+</span><span>  </span><span style="color:#65737e;"># autologon should allow the scripts to automatically continue after reboot
+</span><span>  </span><span style="color:#65737e;"># without user involvement
+</span><span>  config.vm.provision &quot;</span><span style="color:#a3be8c;">autologon</span><span>&quot;, </span><span style="color:#a3be8c;">type: </span><span>&quot;</span><span style="color:#a3be8c;">shell</span><span>&quot;, </span><span style="color:#a3be8c;">privileged: </span><span style="color:#d08770;">true </span><span style="color:#b48ead;">do </span><span>|</span><span style="color:#bf616a;">s</span><span>|
+</span><span>    s.inline = $</span><span style="color:#bf616a;">autologon
+</span><span>  </span><span style="color:#b48ead;">end
+</span><span>  
+</span><span>  config.vm.provision &quot;</span><span style="color:#a3be8c;">disable-defender</span><span>&quot;, </span><span style="color:#a3be8c;">type: </span><span>&quot;</span><span style="color:#a3be8c;">shell</span><span>&quot;, </span><span style="color:#a3be8c;">privileged: </span><span style="color:#d08770;">true </span><span style="color:#b48ead;">do </span><span>|</span><span style="color:#bf616a;">s</span><span>|
+</span><span>    s.inline = $</span><span style="color:#bf616a;">disable_defender
+</span><span>  </span><span style="color:#b48ead;">end
+</span><span>  
+</span><span>  config.vm.provision &quot;</span><span style="color:#a3be8c;">set-autologon-key</span><span>&quot;, </span><span style="color:#a3be8c;">type: </span><span>&quot;</span><span style="color:#a3be8c;">shell</span><span>&quot;, </span><span style="color:#a3be8c;">privileged: </span><span style="color:#d08770;">true</span><span>, </span><span style="color:#a3be8c;">run: </span><span>&quot;</span><span style="color:#a3be8c;">never</span><span>&quot; </span><span style="color:#b48ead;">do </span><span>|</span><span style="color:#bf616a;">s</span><span>|
+</span><span>    s.inline =&#39;</span><span style="color:#a3be8c;">Set-ItemProperty -Path &quot;HKLM:/SOFTWARE/Microsoft/Windows NT/CurrentVersion</span><span style="color:#96b5b4;">\\</span><span style="color:#a3be8c;">Winlogon&quot; -Name &quot;AutoAdminLogon&quot; -Value &quot;1&quot;; C:/ProgramData/AutoLogon/Autologon64.exe &quot;vagrant&quot; &quot;FLAREVM&quot; &quot;vagrant&quot; /accepteula; Restart-Computer -Force</span><span>&#39;
+</span><span>  </span><span style="color:#b48ead;">end
+</span><span>  
+</span><span>  config.vm.provision &quot;</span><span style="color:#a3be8c;">flare-install</span><span>&quot;, </span><span style="color:#a3be8c;">type: </span><span>&quot;</span><span style="color:#a3be8c;">shell</span><span>&quot;, </span><span style="color:#a3be8c;">privileged: </span><span style="color:#d08770;">true</span><span>, </span><span style="color:#a3be8c;">run: </span><span>&quot;</span><span style="color:#a3be8c;">never</span><span>&quot; </span><span style="color:#b48ead;">do </span><span>|</span><span style="color:#bf616a;">s</span><span>|
+</span><span>    s.inline = $</span><span style="color:#bf616a;">script
+</span><span>  </span><span style="color:#b48ead;">end
+</span><span style="color:#b48ead;">end
+</span></code></pre>
+<h3 id="usage">Usage:</h3>
+<p>Requirements: Vagrant, HyperV, and sufficient disk space for the gusztavvargadr/windows-10 Vagrant box and the FlareVM installation.</p>
+<p>Get the latest version of the Vagrant file from <a href="https://github.com/murdoch3/FlareVagrant">here</a>.</p>
+<p>To use this Vagrantfile to create a FlareVM virtual machine, run the following commands:</p>
+<pre data-lang="batch" style="background-color:#2b303b;color:#c0c5ce;" class="language-batch "><code class="language-batch" data-lang="batch"><span>vagrant up;  
+</span><span>vagrant up --provision-with set-autologon-key;  
+</span><span>vagrant up --provision-with flare-install
+</span></code></pre>
+<p>The first command will provision the virtual machine on HyperV, set the autologon credentials and permanently delete Windows Defender. The second will set the AutoAdminLogon registry key and triggers a restart (this sometimes shows errors, but it is the only way I could get auto login to work). The third will install FlareVM.</p>
+<h2 id="how-it-works">How It Works</h2>
+<p>The Vagrantfile automates the process of provisioning and deploying FlareVM by performing the following tasks:</p>
+<ol>
+<li>
+<p><strong>Virtual Machine Provisioning:</strong> To provision the VM, I specified that we want to pull the gusztavvargadr/windows-10 Vagrant box and configured our VM settings, including the VM's hostname, provider (i.e., VirtualBox, HyperV, etc.), hardware requirements, and networking configuration.</p>
+<pre data-lang="ruby" style="background-color:#2b303b;color:#c0c5ce;" class="language-ruby "><code class="language-ruby" data-lang="ruby"><span style="color:#65737e;">#...
+</span><span style="color:#ebcb8b;">Vagrant</span><span>.configure(&quot;</span><span style="color:#a3be8c;">2</span><span>&quot;) </span><span style="color:#b48ead;">do </span><span>|</span><span style="color:#bf616a;">config</span><span>|
+</span><span>    config.vm.box = &quot;</span><span style="color:#a3be8c;">gusztavvargadr/windows-10</span><span>&quot;
+</span><span>    config.vm.hostname = &quot;</span><span style="color:#a3be8c;">FlareVM</span><span>&quot;
+</span><span>    config.vm.synced_folder &#39;</span><span style="color:#a3be8c;">.</span><span>&#39;, &#39;</span><span style="color:#a3be8c;">/vagrant</span><span>&#39;, </span><span style="color:#a3be8c;">disabled: </span><span style="color:#d08770;">true
+</span><span>
+</span><span>    config.vm.provider &quot;</span><span style="color:#a3be8c;">hyperv</span><span>&quot; </span><span style="color:#b48ead;">do </span><span>|</span><span style="color:#bf616a;">vb</span><span>|
+</span><span>    vb.memory = </span><span style="color:#d08770;">5000
+</span><span>    vb.cpus = </span><span style="color:#d08770;">4
+</span><span>    </span><span style="color:#b48ead;">end
+</span><span>
+</span><span>    config.vm.network &quot;</span><span style="color:#a3be8c;">private_network</span><span>&quot;, </span><span style="color:#a3be8c;">type: </span><span>&quot;</span><span style="color:#a3be8c;">dhcp</span><span>&quot;, </span><span style="color:#a3be8c;">netmask: </span><span>&quot;</span><span style="color:#a3be8c;">255.255.255.0</span><span>&quot;, </span><span style="color:#a3be8c;">dhcp_ip:</span><span>&quot;</span><span style="color:#a3be8c;">192.168.56.100</span><span>&quot;, </span><span style="color:#a3be8c;">dhcp_lower: </span><span>&quot;</span><span style="color:#a3be8c;">192.168.56.101</span><span>&quot;, </span><span style="color:#a3be8c;">:dhcp_upper</span><span>=&gt;&quot;</span><span style="color:#a3be8c;">192.168.56.254</span><span>&quot;
+</span><span>
+</span><span>    </span><span style="color:#65737e;"># ... provisioning code
+</span><span style="color:#b48ead;">end
+</span></code></pre>
+</li>
+<li>
+<p><strong>Disabling</strong> <strong>Windows Defender:</strong> After trying all of Flare's linked resources without success, I discovered <a href="https://github.com/ionuttbara/windows-defender-remover/">this repo</a>. This is the only automated way I've found to remove Windows Defender from this version of Windows 10. The vagrant provision step downloads the repo and runs <code>Script\_Run.bat y</code>. This will delete Windows Defender by applying a series of registry changes and then deleting Defender related files from C:\Windows\WinSxS, C:\Windows\System32, C:\Windows\Program Files (x86)\, etc.</p>
+<pre data-lang="ruby" style="background-color:#2b303b;color:#c0c5ce;" class="language-ruby "><code class="language-ruby" data-lang="ruby"><span style="color:#65737e;"># Powershell provision script
+</span><span>$</span><span style="color:#bf616a;">disable_defender </span><span>= &lt;&lt;-SCRIPT 
+</span><span style="color:#a3be8c;">wget https://github.com/ionuttbara/windows-defender-remover/archive/refs/heads/main.zip -O C:</span><span style="color:#96b5b4;">\\</span><span style="color:#a3be8c;">ProgramData</span><span style="color:#96b5b4;">\\</span><span style="color:#a3be8c;">main.zip
+</span><span style="color:#a3be8c;">Expand-Archive C:</span><span style="color:#96b5b4;">\\</span><span style="color:#a3be8c;">ProgramData</span><span style="color:#96b5b4;">\\</span><span style="color:#a3be8c;">main.zip -DestinationPath C:</span><span style="color:#96b5b4;">\\</span><span style="color:#a3be8c;">ProgramData
+</span><span style="color:#a3be8c;">C:</span><span style="color:#96b5b4;">\\</span><span style="color:#a3be8c;">ProgramData</span><span style="color:#96b5b4;">\\</span><span style="color:#a3be8c;">windows-defender-remover-main</span><span style="color:#96b5b4;">\\</span><span style="color:#a3be8c;">Script_Run.bat y
+</span><span>SCRIPT
+</span><span>
+</span><span style="color:#65737e;"># ...
+</span><span>
+</span><span style="color:#ebcb8b;">Vagrant</span><span>.configure(&quot;</span><span style="color:#a3be8c;">2</span><span>&quot;) </span><span style="color:#b48ead;">do </span><span>|</span><span style="color:#bf616a;">config</span><span>|
+</span><span>    </span><span style="color:#65737e;"># ...
+</span><span>    </span><span style="color:#65737e;"># Use this provisioning step to delete defender using our script
+</span><span>    config.vm.provision &quot;</span><span style="color:#a3be8c;">disable-defender</span><span>&quot;, </span><span style="color:#a3be8c;">type: </span><span>&quot;</span><span style="color:#a3be8c;">shell</span><span>&quot;, </span><span style="color:#a3be8c;">privileged: </span><span style="color:#d08770;">true </span><span style="color:#b48ead;">do </span><span>|</span><span style="color:#bf616a;">s</span><span>|
+</span><span>      s.inline = $</span><span style="color:#bf616a;">disable_defender
+</span><span>    </span><span style="color:#b48ead;">end
+</span><span>    </span><span style="color:#65737e;"># ...
+</span><span style="color:#b48ead;">end
+</span></code></pre>
+</li>
+<li>
+<p><strong>Enabling Autologon:</strong> Enabling Autologon is necessary to prevent the user from having to manually login during the Flare installation. The only way I could get this to work with Vagrant was to perform it in two steps, the first downloading and executing the SysInternals Autologon tool to set the autologon credentials, and the second to set the AutoAdminLogon registry key and reboot (unfortunately, uncleanly).</p>
+<pre data-lang="ruby" style="background-color:#2b303b;color:#c0c5ce;" class="language-ruby "><code class="language-ruby" data-lang="ruby"><span style="color:#65737e;"># ...
+</span><span>$</span><span style="color:#bf616a;">autologon </span><span>= &lt;&lt;-SCRIPT
+</span><span style="color:#a3be8c;">Set-ItemProperty -Path &quot;HKLM:/SOFTWARE/Microsoft/Windows NT/CurrentVersion</span><span style="color:#96b5b4;">\\</span><span style="color:#a3be8c;">Winlogon&quot; -Name &quot;AutoAdminLogon&quot; -Value &quot;1&quot;
+</span><span style="color:#a3be8c;">wget https://download.sysinternals.com/files/AutoLogon.zip -O C:</span><span style="color:#96b5b4;">\\</span><span style="color:#a3be8c;">ProgramData</span><span style="color:#96b5b4;">\\</span><span style="color:#a3be8c;">AutoLogon.zip
+</span><span style="color:#a3be8c;">Expand-Archive C:</span><span style="color:#96b5b4;">\\</span><span style="color:#a3be8c;">ProgramData</span><span style="color:#96b5b4;">\\</span><span style="color:#a3be8c;">AutoLogon.zip -DestinationPath C:</span><span style="color:#96b5b4;">\\</span><span style="color:#a3be8c;">ProgramData</span><span style="color:#96b5b4;">\\</span><span style="color:#a3be8c;">AutoLogon
+</span><span style="color:#a3be8c;">C:/ProgramData/AutoLogon/Autologon64.exe &quot;vagrant&quot; &quot;FLAREVM&quot; &quot;vagrant&quot; /accepteula
+</span><span>SCRIPT
+</span><span>
+</span><span style="color:#65737e;"># ...
+</span><span>
+</span><span style="color:#ebcb8b;">Vagrant</span><span>.configure(&quot;</span><span style="color:#a3be8c;">2</span><span>&quot;) </span><span style="color:#b48ead;">do </span><span>|</span><span style="color:#bf616a;">config</span><span>|
+</span><span>    </span><span style="color:#65737e;"># ...
+</span><span>    config.vm.provision &quot;</span><span style="color:#a3be8c;">autologon</span><span>&quot;, </span><span style="color:#a3be8c;">type: </span><span>&quot;</span><span style="color:#a3be8c;">shell</span><span>&quot;, </span><span style="color:#a3be8c;">privileged: </span><span style="color:#d08770;">true </span><span style="color:#b48ead;">do </span><span>|</span><span style="color:#bf616a;">s</span><span>|
+</span><span>      s.inline = $</span><span style="color:#bf616a;">autologon
+</span><span>    </span><span style="color:#b48ead;">end
+</span><span>
+</span><span>    config.vm.provision &quot;</span><span style="color:#a3be8c;">set-autologon-key</span><span>&quot;, </span><span style="color:#a3be8c;">type: </span><span>&quot;</span><span style="color:#a3be8c;">shell</span><span>&quot;, </span><span style="color:#a3be8c;">privileged: </span><span style="color:#d08770;">true</span><span>, </span><span style="color:#a3be8c;">run: </span><span>&quot;</span><span style="color:#a3be8c;">never</span><span>&quot; </span><span style="color:#b48ead;">do </span><span>|</span><span style="color:#bf616a;">s</span><span>|
+</span><span>      s.inline =&#39;</span><span style="color:#a3be8c;">Set-ItemProperty -Path &quot;HKLM:/SOFTWARE/Microsoft/Windows NT/CurrentVersion</span><span style="color:#96b5b4;">\\</span><span style="color:#a3be8c;">Winlogon&quot; -Name &quot;AutoAdminLogon&quot; -Value &quot;1&quot;; C:/ProgramData/AutoLogon/Autologon64.exe &quot;vagrant&quot; &quot;FLAREVM&quot; &quot;vagrant&quot; /accepteula; Restart-Computer -Force</span><span>&#39;
+</span><span>    </span><span style="color:#b48ead;">end
+</span><span>
+</span><span>    </span><span style="color:#65737e;"># ...
+</span><span style="color:#b48ead;">end
+</span></code></pre>
+</li>
+<li>
+<p><strong>FlareVM Installation:</strong> The last step is to download and execute the Flare install script. It uses a custom version of the script with a few of the initial prompts commented out. The flags -customConfig, -password, -noWait, and -noGui are used to make the rest of the process automated.</p>
+<pre data-lang="ruby" style="background-color:#2b303b;color:#c0c5ce;" class="language-ruby "><code class="language-ruby" data-lang="ruby"><span style="color:#65737e;"># ...
+</span><span>$</span><span style="color:#bf616a;">script </span><span>= &lt;&lt;-SCRIPT
+</span><span style="color:#a3be8c;">Invoke-WebRequest -Uri &quot;https://raw.githubusercontent.com/murdoch3/flare-vm/main/install.ps1&quot; -OutFile &quot;$env:USERPROFILE</span><span style="color:#96b5b4;">\\</span><span style="color:#a3be8c;">Desktop</span><span style="color:#96b5b4;">\\</span><span style="color:#a3be8c;">install.ps1&quot;
+</span><span style="color:#a3be8c;">Invoke-WebRequest -Uri &quot;https://raw.githubusercontent.com/murdoch3/flare-vm/main/config.xml&quot; -OutFile &quot;$env:USERPROFILE</span><span style="color:#96b5b4;">\\</span><span style="color:#a3be8c;">Desktop</span><span style="color:#96b5b4;">\\</span><span style="color:#a3be8c;">config.xml&quot;
+</span><span style="color:#a3be8c;">Unblock-File &quot;$env:USERPROFILE</span><span style="color:#96b5b4;">\\</span><span style="color:#a3be8c;">Desktop</span><span style="color:#96b5b4;">\\</span><span style="color:#a3be8c;">install.ps1&quot;
+</span><span style="color:#a3be8c;">Set-ExecutionPolicy Unrestricted -Scope Process -Force
+</span><span style="color:#a3be8c;">Set-ExecutionPolicy Unrestricted -Scope CurrentUser -Force
+</span><span style="color:#a3be8c;">Set-ExecutionPolicy Unrestricted -Scope LocalMachine -Force
+</span><span style="color:#a3be8c;">&amp;&quot;$env:USERPROFILE</span><span style="color:#96b5b4;">\\</span><span style="color:#a3be8c;">Desktop</span><span style="color:#96b5b4;">\\</span><span style="color:#a3be8c;">install.ps1&quot; -customConfig  &quot;$env:USERPROFILE</span><span style="color:#96b5b4;">\\</span><span style="color:#a3be8c;">Desktop</span><span style="color:#96b5b4;">\\</span><span style="color:#a3be8c;">config.xml&quot; -password vagrant -noWait -noGui
+</span><span>SCRIPT
+</span><span>
+</span><span style="color:#65737e;"># ...
+</span><span>
+</span><span style="color:#ebcb8b;">Vagrant</span><span>.configure(&quot;</span><span style="color:#a3be8c;">2</span><span>&quot;) </span><span style="color:#b48ead;">do </span><span>|</span><span style="color:#bf616a;">config</span><span>|
+</span><span>    </span><span style="color:#65737e;"># ...
+</span><span>    config.vm.provision &quot;</span><span style="color:#a3be8c;">flare-install</span><span>&quot;, </span><span style="color:#a3be8c;">type: </span><span>&quot;</span><span style="color:#a3be8c;">shell</span><span>&quot;, </span><span style="color:#a3be8c;">privileged: </span><span style="color:#d08770;">true</span><span>, </span><span style="color:#a3be8c;">run: </span><span>&quot;</span><span style="color:#a3be8c;">never</span><span>&quot; </span><span style="color:#b48ead;">do </span><span>|</span><span style="color:#bf616a;">s</span><span>|
+</span><span>      s.inline = $</span><span style="color:#bf616a;">script
+</span><span>    </span><span style="color:#b48ead;">end
+</span><span>    </span><span style="color:#65737e;"># ...
+</span><span style="color:#b48ead;">end
+</span></code></pre>
+</li>
+</ol>
+<h2 id="problems-faced">Problems Faced</h2>
+<h3 id="vagrant-virtualbox-the-dhcp-on-this-adapter-is-incompatible-with-the-dhcp-settings">Vagrant/Virtualbox: The DHCP on this adapter is incompatible with the DHCP settings</h3>
+<p>Initially when I was using Vagrant and Virtualbox, I ran into this error. It was fixed by changing the initial network line:</p>
+<pre data-lang="ruby" style="background-color:#2b303b;color:#c0c5ce;" class="language-ruby "><code class="language-ruby" data-lang="ruby"><span>config.vm.network &quot;</span><span style="color:#a3be8c;">private_network</span><span>&quot;, </span><span style="color:#a3be8c;">type: </span><span>&quot;</span><span style="color:#a3be8c;">dhcp</span><span>&quot;
+</span></code></pre>
+<p>To include the Virtualbox's Host-Only network's DHCP information:</p>
+<pre data-lang="ruby" style="background-color:#2b303b;color:#c0c5ce;" class="language-ruby "><code class="language-ruby" data-lang="ruby"><span>config.vm.network &quot;</span><span style="color:#a3be8c;">private_network</span><span>&quot;, </span><span style="color:#a3be8c;">type: </span><span>&quot;</span><span style="color:#a3be8c;">dhcp</span><span>&quot;, </span><span style="color:#a3be8c;">netmask: </span><span>&quot;</span><span style="color:#a3be8c;">255.255.255.0</span><span>&quot;, </span><span style="color:#a3be8c;">dhcp_ip:</span><span>&quot;</span><span style="color:#a3be8c;">192.168.56.100</span><span>&quot;, </span><span style="color:#a3be8c;">dhcp_lower: </span><span>&quot;</span><span style="color:#a3be8c;">192.168.56.101</span><span>&quot;, </span><span style="color:#a3be8c;">:dhcp_upper</span><span>=&gt;&quot;</span><span style="color:#a3be8c;">192.168.56.254</span><span>&quot;
+</span></code></pre>
+<h3 id="vagrant-stuck-on-preparing-smb-shared-folders">Vagrant Stuck on Preparing SMB Shared Folders</h3>
+<p>This was solved by just disabling the default vagrant shared folder:</p>
+<pre data-lang="ruby" style="background-color:#2b303b;color:#c0c5ce;" class="language-ruby "><code class="language-ruby" data-lang="ruby"><span>config.vm.synced_folder &#39;</span><span style="color:#a3be8c;">.</span><span>&#39;, &#39;</span><span style="color:#a3be8c;">/vagrant</span><span>&#39;, </span><span style="color:#a3be8c;">disabled: </span><span style="color:#d08770;">true
+</span></code></pre>
+<h3 id="set-executionpolicy-the-setting-is-overridden-by-a-policy-defined-at-a-more-specific-scope">Set-ExecutionPolicy: The Setting is Overridden by a Policy Defined at a More Specific Scope</h3>
+<p>I believe this problem has to do with the default ExecutionPolicy of the vagrant box, which can be seen with Get-ExecutionPolicy -List. While it's not elegant, I found setting the execution policies as follows to work consistently:</p>
+<pre data-lang="powershell" style="background-color:#2b303b;color:#c0c5ce;" class="language-powershell "><code class="language-powershell" data-lang="powershell"><span style="color:#96b5b4;">Set-ExecutionPolicy</span><span> Unrestricted -Scope </span><span style="color:#b48ead;">Process </span><span>-Force
+</span><span style="color:#96b5b4;">Set-ExecutionPolicy</span><span> Unrestricted -Scope CurrentUser -Force
+</span><span style="color:#96b5b4;">Set-ExecutionPolicy</span><span> Unrestricted -Scope LocalMachine -Force
+</span></code></pre>
+<h2 id="conclusion">Conclusion</h2>
+<p>In conclusion, using this Vagrantfile significantly streamlines the creation of a FlareVM virtual machine by fully automating the process.</p>
+<p>As always, there is room for improvement. Further work could include:</p>
+<ul>
+<li>Performing the Vagrant installation in a single command.</li>
+<li>Making the Windows Defender Remover script and autologon provisioning Vagrant-compatible by performing the restart with Vagrant reload.</li>
+<li>Creating equivalent VMWare and VirtualBox Vagrantfiles.</li>
+<li>Creating and using a custom Flare ISO or Vagrant box.</li>
+</ul>
+
+</section>
+
+
+            <div id="font_picker_container">
+                <button id="toggle_button">Pick a Font ▼</button>
+                <div id="font_picker_section">
+                    <input type="radio" id="font_anonymous" name="font" value="Anonymous Pro">
+                    <label for="font_anonymous">Anonymous Pro</label>
+                    <br>
+                    <input type="radio" id="font_lato" name="font" value="Lato">
+                    <label for="font_lato">Lato</label>
+                    <br>
+                    <input type="radio" id="font_lora" name="font" value="Lora">
+                    <label for="font_lora">Lora</label>
+                </div>
+            </div>
+        </main>
+    </div>
+</body>
+</html>

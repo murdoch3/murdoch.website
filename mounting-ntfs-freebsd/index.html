@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- <title>Murdoch's Blog</title> -->
+    <title> Mounting NTFS drives on FreeBSD 14.1 | Murdoch's Website </title>
+    <!-- Import fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Anonymous+Pro:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&family=Lora:ital,wght@0,400..700;1,400..700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/styles.css">
+    <link rel="stylesheet" href="/css/font_anonymous_pro.css" id="font_stylesheet">
+    <link rel="stylesheet" href="/css/prism.css">
+    <link rel="icon" type="image/png" href="/favicon.png">
+    <script src="/js/font_picker.js"></script>
+    <meta name="msvalidate.01" content="1B81B4B36B69521589792FCAE9AEFFD9" />
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><a href="/">Murdoch's Blog</a></h1>
+        </header>
+        
+        <main>
+            
+
+<section id="post-title">
+    <h2>Mounting NTFS drives on FreeBSD 14.1</h2>
+    <div class="post-meta">
+        <span class="date">2024-12-01</span>
+        <span class="category">sysadmin, unix</span>
+    </div>
+</section>
+
+<!-- Content needs to include the table of contents and page content -->
+<!-- Ideally we'd be able to split it off somehow -->
+
+<nav class="table-of-contents">
+    <h2>Contents</h2>
+    <ul>
+        
+        <li>
+            <a href="https://murdoch.website/mounting-ntfs-freebsd/#introduction">Introduction</a>
+            
+        </li>
+        
+        <li>
+            <a href="https://murdoch.website/mounting-ntfs-freebsd/#guide">Guide</a>
+            
+        </li>
+        
+        <li>
+            <a href="https://murdoch.website/mounting-ntfs-freebsd/#references">References</a>
+            
+        </li>
+        
+    </ul>
+</nav>
+
+
+<section id="post-content">
+    <h3 id="introduction">Introduction</h3>
+<p>On a fresh install of FreeBSD 14.1 I ran into the problem of mounting my NTFS partitions which had backed up data from a previous Windows install. While there are many resources solving this problem for older versions of FreeBSD (some of them listed in the references), I found them all outdated in one way or another.</p>
+<p>In this post I'll demonstrate how you can mount NTFS partitions on FreeBSD 14.1, including working /etc/fstab entries so that they can be mounted on boot.</p>
+<h3 id="guide">Guide</h3>
+<p>First, we have to find our NTFS partitions. The easiest way I've found to do this is by using Vermaden's lsblk script (which mimics the Linux tool of the same name):</p>
+<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#bf616a;">curl</span><span> https://raw.githubusercontent.com/vermaden/lsblk/refs/heads/master/lsblk</span><span style="color:#bf616a;"> -o</span><span> lsblk.sh
+</span><span style="color:#bf616a;">chmod</span><span> +x ./lsblk.sh
+</span><span style="color:#bf616a;">./lsblk.sh
+</span></code></pre>
+<p>Based on the `ms-basic-data` partitions in the output, I can tell the NTFS partitions I'm looking for are ada0p1 and ada1p1.</p>
+<p>Now we can work on mounting them. As root:</p>
+<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#65737e;"># Install FUSE and its NTFS driver
+</span><span style="color:#bf616a;">pkg</span><span> install fuse fuse-utils fusefs-ntfs
+</span><span style="color:#65737e;"># Load the fusefs kernel driver
+</span><span style="color:#bf616a;">kldload</span><span> fusefs
+</span><span style="color:#65737e;"># Add it to /boot/loader.conf so it loads on boot before mounts occur
+</span><span style="color:#96b5b4;">echo </span><span>&#39;</span><span style="color:#a3be8c;">fusefs_load=&quot;YES&quot;</span><span>&#39; | </span><span style="color:#bf616a;">tee -a</span><span> /boot/loader.conf
+</span><span>
+</span><span style="color:#65737e;"># Mount the partitions using ntfs-3g
+</span><span style="color:#bf616a;">mkdir</span><span> /mnt/hdd
+</span><span style="color:#bf616a;">ntfs-3g</span><span> /dev/ada0p1 /mnt/hdd
+</span><span style="color:#bf616a;">mkdir</span><span> /mnt/sdd
+</span><span style="color:#bf616a;">ntfs-3g</span><span> /dev/ada1p1 /mnt/sdd
+</span></code></pre>
+<p>To have these partitions mount on boot, we can add the following lines to the /etc/fstab file:</p>
+<pre data-lang="fstab" style="background-color:#2b303b;color:#c0c5ce;" class="language-fstab "><code class="language-fstab" data-lang="fstab"><span># /etc/fstab...
+</span><span>/dev/ada0p1 /mnt/hdd fuse rw,auto,mountprog=/usr/local/bin/ntfs-3g 0 0
+</span><span>/dev/ada1p1 /mnt/sdd fuse rw,auto,mountprog=/usr/local/bin/ntfs-3g 0 0
+</span></code></pre>
+<p>If you haven't already mounted the partitions with ntfs-3g, you can test this with `mount -a`</p>
+<h3 id="references">References</h3>
+<ul>
+<li><a href="https://www.gridbugs.org/ntfs-on-freebsd/">'NTFS on FreeBSD' at gridbugs.org</a></li>
+<li><a href="http://kflu.github.io/2018/02/03/2018-02-03-freebsd-ntfs/">'Mounting NTFS on FreeBSD' on kflu.github.io</a></li>
+<li><a href="https://chieflemming.wordpress.com/2020/01/08/formatting-partitioning-and-mounting-drives-for-ntfs-with-freebsd-and-mac-os-x/">'Formatting, partitioning, and mounting drives for NTFS with FreeBSD and Mac OS X' on chieflemming.wordpress.com</a></li>
+<li><a href="https://forums.freebsd.org/threads/how-to-mount-ntfs-during-freebsd-installation-process.71619/">'How to mount NTFS during FreeBSD installation process ?'</a></li>
+<li><a href="https://raw.githubusercontent.com/vermaden/lsblk/refs/heads/master/lsblk">Vermaden's lsblk script</a></li>
+</ul>
+
+</section>
+
+
+            <div id="font_picker_container">
+                <button id="toggle_button">Pick a Font ▼</button>
+                <div id="font_picker_section">
+                    <input type="radio" id="font_anonymous" name="font" value="Anonymous Pro">
+                    <label for="font_anonymous">Anonymous Pro</label>
+                    <br>
+                    <input type="radio" id="font_lato" name="font" value="Lato">
+                    <label for="font_lato">Lato</label>
+                    <br>
+                    <input type="radio" id="font_lora" name="font" value="Lora">
+                    <label for="font_lora">Lora</label>
+                </div>
+            </div>
+        </main>
+    </div>
+</body>
+</html>

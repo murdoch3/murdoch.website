@@ -1,0 +1,239 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom" xml:lang="en">
+    <title> - ctfs</title>
+    <link rel="self" type="application/atom+xml" href="https://murdoch.website/categories/ctfs/atom.xml"/>
+    <link rel="alternate" type="text/html" href="https://murdoch.website"/>
+    <generator uri="https://www.getzola.org/">Zola</generator>
+    <updated>2024-08-30T00:00:00+00:00</updated>
+    <id>https://murdoch.website/categories/ctfs/atom.xml</id>
+    <entry xml:lang="en">
+        <title>Run Kali Linux with GUI on M-Series Macs</title>
+        <published>2024-08-30T00:00:00+00:00</published>
+        <updated>2024-08-30T00:00:00+00:00</updated>
+        
+        <author>
+          <name>
+            
+              Unknown
+            
+          </name>
+        </author>
+        
+        <link rel="alternate" type="text/html" href="https://murdoch.website/kali-vm-on-m1/"/>
+        <id>https://murdoch.website/kali-vm-on-m1/</id>
+        
+        <content type="html" xml:base="https://murdoch.website/kali-vm-on-m1/">&lt;h3 id=&quot;requirements&quot;&gt;Requirements&lt;&#x2F;h3&gt;
+&lt;ul&gt;
+&lt;li&gt;M-Series Mac (Apple Silicon)&lt;&#x2F;li&gt;
+&lt;li&gt;At least 12GB of free space (more depending on desired packages)&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;a href=&quot;https:&#x2F;&#x2F;docs.orbstack.dev&#x2F;install&quot;&gt;OrbStack&lt;&#x2F;a&gt; installed&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;a href=&quot;https:&#x2F;&#x2F;downloads.nomachine.com&#x2F;&quot;&gt;NoMachine&lt;&#x2F;a&gt; installed&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;h3 id=&quot;introduction&quot;&gt;Introduction&lt;&#x2F;h3&gt;
+&lt;p&gt;This guide outlines the process for setting up a Kali Linux virtual machine or container on an M-series Mac. It uses OrbStack, a fast and lightweight alternative to Docker Desktop and virtualization solutions like Parallels. NoMachine is used to get GUI access to Kali.&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;option-1-installing-a-kali-linux-vm-with-orbstack&quot;&gt;Option 1: Installing a Kali Linux VM with OrbStack&lt;&#x2F;h3&gt;
+&lt;h4 id=&quot;create-and-setup-the-vm&quot;&gt;Create and Setup the VM&lt;&#x2F;h4&gt;
+&lt;ol&gt;
+&lt;li&gt;
+&lt;p&gt;Create a new Kali Linux VM from OrbStack &lt;img src=&quot;&#x2F;img&#x2F;KaliVMonM1Mac&#x2F;img1.png&quot; alt=&quot;&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;&#x2F;li&gt;
+&lt;li&gt;
+&lt;p&gt;Get a shell on the VM &lt;img src=&quot;&#x2F;img&#x2F;KaliVMonM1Mac&#x2F;img2.png&quot; alt=&quot;&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;&#x2F;li&gt;
+&lt;li&gt;
+&lt;p&gt;Set a password for the user.&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;bash&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-bash &quot;&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;sudo&lt;&#x2F;span&gt;&lt;span&gt; passwd user
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;&#x2F;li&gt;
+&lt;li&gt;
+&lt;p&gt;Update apt packages, install the default system metapackage, and choose a desktop environment.&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;bash&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-bash &quot;&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;sudo&lt;&#x2F;span&gt;&lt;span&gt; apt update &amp;amp;&amp;amp; &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;sudo&lt;&#x2F;span&gt;&lt;span&gt; apt install&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt; -y&lt;&#x2F;span&gt;&lt;span&gt; kali-linux-default kali-desktop-i3
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;Note: You can replace &lt;code&gt;kali-desktop-i3&lt;&#x2F;code&gt; with the default &lt;code&gt;kali-desktop-xfce&lt;&#x2F;code&gt; or another desktop environment&#x2F;window manager of your choice.&lt;&#x2F;p&gt;
+&lt;&#x2F;li&gt;
+&lt;li&gt;
+&lt;p&gt;Download and install the NoMachine ARM64 package.&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;bash&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-bash &quot;&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;wget&lt;&#x2F;span&gt;&lt;span&gt; https:&#x2F;&#x2F;download.nomachine.com&#x2F;download&#x2F;8.13&#x2F;Arm&#x2F;nomachine_8.13.1_1_arm64.deb
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;dpkg -i&lt;&#x2F;span&gt;&lt;span&gt; .&#x2F;nomachine_8.13.1_1_arm64.deb
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;&#x2F;li&gt;
+&lt;li&gt;
+&lt;p&gt;Confirm that nxserver is running.&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;bash&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-bash &quot;&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;service&lt;&#x2F;span&gt;&lt;span&gt; nxserver status
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;&#x2F;li&gt;
+&lt;&#x2F;ol&gt;
+&lt;h4 id=&quot;connect-to-the-vm&quot;&gt;Connect to the VM&lt;&#x2F;h4&gt;
+&lt;ol&gt;
+&lt;li&gt;
+&lt;p&gt;Find the IP address of the Kali VM: &lt;img src=&quot;&#x2F;img&#x2F;KaliVMonM1Mac&#x2F;img3.png&quot; alt=&quot;&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;&#x2F;li&gt;
+&lt;li&gt;
+&lt;p&gt;Using the NoMachine Mac client, create a new connection to the VM and connect. &lt;img src=&quot;&#x2F;img&#x2F;KaliVMonM1Mac&#x2F;img4.png&quot; alt=&quot;&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;&#x2F;li&gt;
+&lt;li&gt;
+&lt;p&gt;After going through the connection setup, you will have GUI access to the new Kali VM: &lt;img src=&quot;&#x2F;img&#x2F;KaliVMonM1Mac&#x2F;img5.png&quot; alt=&quot;&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;h4 id=&quot;troubleshooting&quot;&gt;Troubleshooting&lt;&#x2F;h4&gt;
+&lt;p&gt;On reboot, eth0 sometimes starts in the DOWN state. I have been able to fix this by restarting the networking service via a terminal to the VM:&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;bash&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-bash &quot;&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;sudo&lt;&#x2F;span&gt;&lt;span&gt; service networking restart
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;&#x2F;li&gt;
+&lt;&#x2F;ol&gt;
+&lt;h3 id=&quot;option-2-installing-a-kali-linux-container-with-orbstack&quot;&gt;Option 2: Installing a Kali Linux Container with OrbStack&lt;&#x2F;h3&gt;
+&lt;p&gt;The same process, with some small changes, can be repeated for creating a Kali Linux container.&lt;&#x2F;p&gt;
+&lt;ol&gt;
+&lt;li&gt;
+&lt;p&gt;Create the container:&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;bash&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-bash &quot;&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;sudo&lt;&#x2F;span&gt;&lt;span&gt; docker run&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt; -d -it --cap-add&lt;&#x2F;span&gt;&lt;span&gt;=SYS_PTRACE kalilinux&#x2F;kali-rolling
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;Note: The &lt;code&gt;--cap-add=SYS_PTRACE&lt;&#x2F;code&gt; is required to bypass display startup errors with NoMachine. This solution was found &lt;a href=&quot;https:&#x2F;&#x2F;forum.nomachine.com&#x2F;topic&#x2F;nxframebuffer-failed-to-start-in-docker&quot;&gt;here&lt;&#x2F;a&gt;.&lt;&#x2F;p&gt;
+&lt;&#x2F;li&gt;
+&lt;li&gt;
+&lt;p&gt;Setup the container, performing the same steps as for the VM. We update repositories; install the system metapackage, desktop environment metapackage, and NoMachine; and then finally create the user.&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;bash&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-bash &quot;&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;apt&lt;&#x2F;span&gt;&lt;span&gt; update &amp;amp;&amp;amp; &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;apt&lt;&#x2F;span&gt;&lt;span&gt; install&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt; -y&lt;&#x2F;span&gt;&lt;span&gt; kali-linux-default kali-desktop-i3
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;wget&lt;&#x2F;span&gt;&lt;span&gt; https:&#x2F;&#x2F;download.nomachine.com&#x2F;download&#x2F;8.13&#x2F;Arm&#x2F;nomachine_8.13.1_1_arm64.deb
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;dpkg -i&lt;&#x2F;span&gt;&lt;span&gt; .&#x2F;nomachine_8.13.1_1_arm64.deb
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;adduser&lt;&#x2F;span&gt;&lt;span&gt; user
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;usermod -aG&lt;&#x2F;span&gt;&lt;span&gt; sudo user
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;&#x2F;li&gt;
+&lt;li&gt;
+&lt;p&gt;Now the container should be ready. Get its IP address &lt;code&gt;ip a&lt;&#x2F;code&gt; and use the Mac NoMachine client to connect to the container, as we did for the VM.&lt;&#x2F;p&gt;
+&lt;&#x2F;li&gt;
+&lt;&#x2F;ol&gt;
+&lt;h3 id=&quot;post-install&quot;&gt;Post-Install&lt;&#x2F;h3&gt;
+&lt;p&gt;This provides a base Kali Linux install with some common tools. To get the rest of the tools you may be used to from the full install (e.g. burpsuite), you can either install them individually or through &lt;a href=&quot;https:&#x2F;&#x2F;www.kali.org&#x2F;docs&#x2F;general-use&#x2F;metapackages&#x2F;&quot;&gt;Kali&#x27;s tools and menu metapackages&lt;&#x2F;a&gt;.&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;references&quot;&gt;References&lt;&#x2F;h3&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&quot;https:&#x2F;&#x2F;docs.orbstack.dev&#x2F;install&quot;&gt;OrbStack Documentation&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;a href=&quot;https:&#x2F;&#x2F;downloads.nomachine.com&#x2F;&quot;&gt;NoMachine Downloads&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;a href=&quot;https:&#x2F;&#x2F;www.kali.org&#x2F;docs&#x2F;&quot;&gt;Kali Linux Official Documentation&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;a href=&quot;https:&#x2F;&#x2F;mikeesto.com&#x2F;posts&#x2F;orbstack-nomachine-gui&#x2F;&quot;&gt;Mike Esto&#x27;s Blog Post on OrbStack and NoMachine&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+</content>
+        
+    </entry>
+    <entry xml:lang="en">
+        <title>HTB Methodology</title>
+        <published>2024-07-14T00:00:00+00:00</published>
+        <updated>2024-07-14T00:00:00+00:00</updated>
+        
+        <author>
+          <name>
+            
+              Unknown
+            
+          </name>
+        </author>
+        
+        <link rel="alternate" type="text/html" href="https://murdoch.website/htb-methodology/"/>
+        <id>https://murdoch.website/htb-methodology/</id>
+        
+        <content type="html" xml:base="https://murdoch.website/htb-methodology/">&lt;h2 id=&quot;introduction&quot;&gt;Introduction&lt;&#x2F;h2&gt;
+&lt;p&gt;This is a collection of notes, commands, and bullet points to reference when I am working through HackTheBox or other Boot2Root machines. This will be periodically updated with new techniques I find over the course of my hacking and research.&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;enumeration&quot;&gt;Enumeration&lt;&#x2F;h2&gt;
+&lt;h3 id=&quot;nmap-scan&quot;&gt;Nmap Scan&lt;&#x2F;h3&gt;
+&lt;pre data-lang=&quot;bash&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-bash &quot;&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;sudo&lt;&#x2F;span&gt;&lt;span&gt; nmap&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt; -v -sS -A -Pn -T5 -p- -oN&lt;&#x2F;span&gt;&lt;span&gt; nmap.txt &amp;lt;ip&amp;gt;
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;h3 id=&quot;discovered-applications&quot;&gt;Discovered Applications&lt;&#x2F;h3&gt;
+&lt;ul&gt;
+&lt;li&gt;Determine versions&lt;&#x2F;li&gt;
+&lt;li&gt;Look up known vulnerabilities and exploits&lt;&#x2F;li&gt;
+&lt;li&gt;Look up default credentials&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;h3 id=&quot;web-enumeration&quot;&gt;Web Enumeration&lt;&#x2F;h3&gt;
+&lt;h4 id=&quot;gobuster&quot;&gt;Gobuster&lt;&#x2F;h4&gt;
+&lt;p&gt;HTTP:&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;bash&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-bash &quot;&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;gobuster&lt;&#x2F;span&gt;&lt;span&gt; dir&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt; -u&lt;&#x2F;span&gt;&lt;span&gt; http:&#x2F;&#x2F;&amp;lt;ip address&amp;gt; -w &#x2F;usr&#x2F;share&#x2F;seclists&#x2F;Discovery&#x2F;Web-Content&#x2F;directory-list-lowercase-2.3-medium.txt&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt; -x&lt;&#x2F;span&gt;&lt;span&gt; php,html,txt&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt; -r -t&lt;&#x2F;span&gt;&lt;span&gt; 100&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt; -o&lt;&#x2F;span&gt;&lt;span&gt; gobuster-80.txt
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;HTTPS:&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;bash&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-bash &quot;&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;gobuster&lt;&#x2F;span&gt;&lt;span&gt; dir&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt; -k -u&lt;&#x2F;span&gt;&lt;span&gt; https:&#x2F;&#x2F;&amp;lt;ip address&amp;gt; -w &#x2F;usr&#x2F;share&#x2F;seclists&#x2F;Discovery&#x2F;Web-Content&#x2F;directory-list-lowercase-2.3-medium.txt&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt; -x&lt;&#x2F;span&gt;&lt;span&gt; php,html,txt&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt; -r -t&lt;&#x2F;span&gt;&lt;span&gt; 100&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt; -o&lt;&#x2F;span&gt;&lt;span&gt; gobuster-443.txt
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;h4 id=&quot;subdomain-vhost-enumeration&quot;&gt;Subdomain&#x2F;Vhost Enumeration&lt;&#x2F;h4&gt;
+&lt;pre data-lang=&quot;bash&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-bash &quot;&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;ffuf -w&lt;&#x2F;span&gt;&lt;span&gt; subdomains.txt&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt; -u&lt;&#x2F;span&gt;&lt;span&gt; http:&#x2F;&#x2F;website.com&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt; -H &lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;Host: FUZZ.website.com&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt; -o&lt;&#x2F;span&gt;&lt;span&gt; subdomain-scan.txt
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;Exclude results with a given size:&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;bash&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-bash &quot;&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;ffuf -w&lt;&#x2F;span&gt;&lt;span&gt; &#x2F;usr&#x2F;share&#x2F;seclists&#x2F;Discovery&#x2F;DNS&#x2F;subdomains-top1million-20000.txt&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt; -u&lt;&#x2F;span&gt;&lt;span&gt; http:&#x2F;&#x2F;devvortex.htb&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt; -H &lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;Host: FUZZ.devvortex.htb&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt; -fs&lt;&#x2F;span&gt;&lt;span&gt; 154
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;h3 id=&quot;web-application-vulnerabilities&quot;&gt;Web Application Vulnerabilities&lt;&#x2F;h3&gt;
+&lt;ul&gt;
+&lt;li&gt;SQL injection&lt;&#x2F;li&gt;
+&lt;li&gt;Template injection&lt;&#x2F;li&gt;
+&lt;li&gt;XSS (cookie&#x2F;session stealing)&lt;&#x2F;li&gt;
+&lt;li&gt;Directory traversals&lt;&#x2F;li&gt;
+&lt;li&gt;Local&#x2F;remote file inclusion&lt;&#x2F;li&gt;
+&lt;li&gt;Code injection&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;h3 id=&quot;password-cracking&quot;&gt;Password Cracking&lt;&#x2F;h3&gt;
+&lt;pre data-lang=&quot;bash&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-bash &quot;&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;hashcat -m&lt;&#x2F;span&gt;&lt;span&gt; 3200 hash.txt &#x2F;path&#x2F;to&#x2F;wordlist
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;john --format&lt;&#x2F;span&gt;&lt;span&gt;=bcrypt hash.txt&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt; --wordlist&lt;&#x2F;span&gt;&lt;span&gt;=&#x2F;path&#x2F;to&#x2F;wordlist
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;h2 id=&quot;linux-privilege-escalation&quot;&gt;Linux Privilege Escalation&lt;&#x2F;h2&gt;
+&lt;h3 id=&quot;useful-commands&quot;&gt;Useful Commands&lt;&#x2F;h3&gt;
+&lt;pre data-lang=&quot;bash&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-bash &quot;&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;# Find OS version &#x2F; installed applications 
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;uname -a
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;dpkg -l
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;rpm -qa
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;apt&lt;&#x2F;span&gt;&lt;span&gt; list&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt; --installed
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;&lt;a href=&quot;https:&#x2F;&#x2F;github.com&#x2F;peass-ng&#x2F;PEASS-ng&#x2F;tree&#x2F;master&#x2F;linPEAS&quot;&gt;linPEAS&lt;&#x2F;a&gt;&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;linux-privesc-checklist&quot;&gt;Linux Privesc Checklist&lt;&#x2F;h3&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;Vulnerable services running as root (&lt;code&gt;ps aux | grep &quot;^root&quot;&lt;&#x2F;code&gt;)&lt;&#x2F;p&gt;
+&lt;&#x2F;li&gt;
+&lt;li&gt;
+&lt;p&gt;Readable&#x2F;writable system files (&#x2F;etc&#x2F;passwd, &#x2F;etc&#x2F;shadow)&lt;&#x2F;p&gt;
+&lt;&#x2F;li&gt;
+&lt;li&gt;
+&lt;p&gt;SUDO&#x2F;SUID&#x2F;SGID privesc:&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&quot;https:&#x2F;&#x2F;gtfobins.github.io&#x2F;&quot;&gt;GTFOBins&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;code&gt;sudo -l&lt;&#x2F;code&gt;&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;&#x2F;li&gt;
+&lt;li&gt;
+&lt;p&gt;Check cron jobs for weak file permissions, wildcards, etc.&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;find &#x2F; -type f -name &quot;*cron*&quot;&lt;&#x2F;code&gt;&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;&#x2F;li&gt;
+&lt;li&gt;
+&lt;p&gt;Check for passwords&#x2F;keys in config, history, backups and databases&lt;&#x2F;p&gt;
+&lt;&#x2F;li&gt;
+&lt;li&gt;
+&lt;p&gt;Check for NFS shares with no root squashing&lt;&#x2F;p&gt;
+&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;h2 id=&quot;windows-privilege-escalation&quot;&gt;Windows Privilege Escalation&lt;&#x2F;h2&gt;
+&lt;h3 id=&quot;common-commands&quot;&gt;Common Commands&lt;&#x2F;h3&gt;
+&lt;pre data-lang=&quot;batch&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-batch &quot;&gt;&lt;code class=&quot;language-batch&quot; data-lang=&quot;batch&quot;&gt;&lt;span&gt;net user &amp;lt;username&amp;gt; &amp;lt;password&amp;gt; &#x2F;add
+&lt;&#x2F;span&gt;&lt;span&gt;net localgroup &amp;lt;group&amp;gt; &amp;lt;username&amp;gt; &#x2F;add 
+&lt;&#x2F;span&gt;&lt;span&gt;systeminfo
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;h3 id=&quot;common-tools&quot;&gt;Common Tools&lt;&#x2F;h3&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&quot;https:&#x2F;&#x2F;github.com&#x2F;peass-ng&#x2F;PEASS-ng&#x2F;tree&#x2F;master&#x2F;winPEAS&quot;&gt;winPEAS&lt;&#x2F;a&gt; (lots of output)&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;a href=&quot;https:&#x2F;&#x2F;learn.microsoft.com&#x2F;en-us&#x2F;sysinternals&#x2F;downloads&#x2F;psexec&quot;&gt;PsExec&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;a href=&quot;https:&#x2F;&#x2F;github.com&#x2F;samratashok&#x2F;nishang&quot;&gt;Nishang Scripts&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;a href=&quot;https:&#x2F;&#x2F;github.com&#x2F;bitsadmin&#x2F;wesng&quot;&gt;Exploit Suggester&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;a href=&quot;https:&#x2F;&#x2F;learn.microsoft.com&#x2F;en-us&#x2F;sysinternals&#x2F;downloads&#x2F;accesschk&quot;&gt;Accesschk&lt;&#x2F;a&gt; (view ACLs for different resources)&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;a href=&quot;https:&#x2F;&#x2F;www.chiark.greenend.org.uk&#x2F;~sgtatham&#x2F;putty&#x2F;latest.html&quot;&gt;plink.exe&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;h3 id=&quot;windows-privesc-checklist&quot;&gt;Windows Privesc Checklist&lt;&#x2F;h3&gt;
+&lt;ul&gt;
+&lt;li&gt;Modifiable services&lt;&#x2F;li&gt;
+&lt;li&gt;Unquoted service paths&lt;&#x2F;li&gt;
+&lt;li&gt;Writable registry service path&lt;&#x2F;li&gt;
+&lt;li&gt;DLL hijacking&lt;&#x2F;li&gt;
+&lt;li&gt;AlwaysInstallElevated (.msi files)&lt;&#x2F;li&gt;
+&lt;li&gt;Saved credentials&lt;&#x2F;li&gt;
+&lt;li&gt;Pass the hash&lt;&#x2F;li&gt;
+&lt;li&gt;Scheduled tasks&lt;&#x2F;li&gt;
+&lt;li&gt;Potato attacks&lt;&#x2F;li&gt;
+&lt;li&gt;User privileges (&lt;code&gt;whoami &#x2F;all&lt;&#x2F;code&gt;)&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+</content>
+        
+    </entry>
+</feed>

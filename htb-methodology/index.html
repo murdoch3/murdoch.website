@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- <title>Murdoch's Blog</title> -->
+    <title> HTB Methodology | Murdoch's Website </title>
+    <!-- Import fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Anonymous+Pro:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&family=Lora:ital,wght@0,400..700;1,400..700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/styles.css">
+    <link rel="stylesheet" href="/css/font_anonymous_pro.css" id="font_stylesheet">
+    <link rel="stylesheet" href="/css/prism.css">
+    <link rel="icon" type="image/png" href="/favicon.png">
+    <script src="/js/font_picker.js"></script>
+    <meta name="msvalidate.01" content="1B81B4B36B69521589792FCAE9AEFFD9" />
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><a href="/">Murdoch's Blog</a></h1>
+        </header>
+        
+        <main>
+            
+
+<section id="post-title">
+    <h2>HTB Methodology</h2>
+    <div class="post-meta">
+        <span class="date">2024-07-14</span>
+        <span class="category">ctfs</span>
+    </div>
+</section>
+
+<!-- Content needs to include the table of contents and page content -->
+<!-- Ideally we'd be able to split it off somehow -->
+
+<nav class="table-of-contents">
+    <h2>Contents</h2>
+    <ul>
+        
+        <li>
+            <a href="https://murdoch.website/htb-methodology/#introduction">Introduction</a>
+            
+        </li>
+        
+        <li>
+            <a href="https://murdoch.website/htb-methodology/#enumeration">Enumeration</a>
+            
+            <ul>
+                
+                <li>
+                    <a href="https://murdoch.website/htb-methodology/#nmap-scan">Nmap Scan</a>
+                </li>
+                
+                <li>
+                    <a href="https://murdoch.website/htb-methodology/#discovered-applications">Discovered Applications</a>
+                </li>
+                
+                <li>
+                    <a href="https://murdoch.website/htb-methodology/#web-enumeration">Web Enumeration</a>
+                </li>
+                
+                <li>
+                    <a href="https://murdoch.website/htb-methodology/#web-application-vulnerabilities">Web Application Vulnerabilities</a>
+                </li>
+                
+                <li>
+                    <a href="https://murdoch.website/htb-methodology/#password-cracking">Password Cracking</a>
+                </li>
+                
+            </ul>
+            
+        </li>
+        
+        <li>
+            <a href="https://murdoch.website/htb-methodology/#linux-privilege-escalation">Linux Privilege Escalation</a>
+            
+            <ul>
+                
+                <li>
+                    <a href="https://murdoch.website/htb-methodology/#useful-commands">Useful Commands</a>
+                </li>
+                
+                <li>
+                    <a href="https://murdoch.website/htb-methodology/#linux-privesc-checklist">Linux Privesc Checklist</a>
+                </li>
+                
+            </ul>
+            
+        </li>
+        
+        <li>
+            <a href="https://murdoch.website/htb-methodology/#windows-privilege-escalation">Windows Privilege Escalation</a>
+            
+            <ul>
+                
+                <li>
+                    <a href="https://murdoch.website/htb-methodology/#common-commands">Common Commands</a>
+                </li>
+                
+                <li>
+                    <a href="https://murdoch.website/htb-methodology/#common-tools">Common Tools</a>
+                </li>
+                
+                <li>
+                    <a href="https://murdoch.website/htb-methodology/#windows-privesc-checklist">Windows Privesc Checklist</a>
+                </li>
+                
+            </ul>
+            
+        </li>
+        
+    </ul>
+</nav>
+
+
+<section id="post-content">
+    <h2 id="introduction">Introduction</h2>
+<p>This is a collection of notes, commands, and bullet points to reference when I am working through HackTheBox or other Boot2Root machines. This will be periodically updated with new techniques I find over the course of my hacking and research.</p>
+<h2 id="enumeration">Enumeration</h2>
+<h3 id="nmap-scan">Nmap Scan</h3>
+<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#bf616a;">sudo</span><span> nmap</span><span style="color:#bf616a;"> -v -sS -A -Pn -T5 -p- -oN</span><span> nmap.txt &lt;ip&gt;
+</span></code></pre>
+<h3 id="discovered-applications">Discovered Applications</h3>
+<ul>
+<li>Determine versions</li>
+<li>Look up known vulnerabilities and exploits</li>
+<li>Look up default credentials</li>
+</ul>
+<h3 id="web-enumeration">Web Enumeration</h3>
+<h4 id="gobuster">Gobuster</h4>
+<p>HTTP:</p>
+<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#bf616a;">gobuster</span><span> dir</span><span style="color:#bf616a;"> -u</span><span> http://&lt;ip address&gt; -w /usr/share/seclists/Discovery/Web-Content/directory-list-lowercase-2.3-medium.txt</span><span style="color:#bf616a;"> -x</span><span> php,html,txt</span><span style="color:#bf616a;"> -r -t</span><span> 100</span><span style="color:#bf616a;"> -o</span><span> gobuster-80.txt
+</span></code></pre>
+<p>HTTPS:</p>
+<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#bf616a;">gobuster</span><span> dir</span><span style="color:#bf616a;"> -k -u</span><span> https://&lt;ip address&gt; -w /usr/share/seclists/Discovery/Web-Content/directory-list-lowercase-2.3-medium.txt</span><span style="color:#bf616a;"> -x</span><span> php,html,txt</span><span style="color:#bf616a;"> -r -t</span><span> 100</span><span style="color:#bf616a;"> -o</span><span> gobuster-443.txt
+</span></code></pre>
+<h4 id="subdomain-vhost-enumeration">Subdomain/Vhost Enumeration</h4>
+<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#bf616a;">ffuf -w</span><span> subdomains.txt</span><span style="color:#bf616a;"> -u</span><span> http://website.com</span><span style="color:#bf616a;"> -H </span><span>&quot;</span><span style="color:#a3be8c;">Host: FUZZ.website.com</span><span>&quot;</span><span style="color:#bf616a;"> -o</span><span> subdomain-scan.txt
+</span></code></pre>
+<p>Exclude results with a given size:</p>
+<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#bf616a;">ffuf -w</span><span> /usr/share/seclists/Discovery/DNS/subdomains-top1million-20000.txt</span><span style="color:#bf616a;"> -u</span><span> http://devvortex.htb</span><span style="color:#bf616a;"> -H </span><span>&quot;</span><span style="color:#a3be8c;">Host: FUZZ.devvortex.htb</span><span>&quot;</span><span style="color:#bf616a;"> -fs</span><span> 154
+</span></code></pre>
+<h3 id="web-application-vulnerabilities">Web Application Vulnerabilities</h3>
+<ul>
+<li>SQL injection</li>
+<li>Template injection</li>
+<li>XSS (cookie/session stealing)</li>
+<li>Directory traversals</li>
+<li>Local/remote file inclusion</li>
+<li>Code injection</li>
+</ul>
+<h3 id="password-cracking">Password Cracking</h3>
+<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#bf616a;">hashcat -m</span><span> 3200 hash.txt /path/to/wordlist
+</span><span style="color:#bf616a;">john --format</span><span>=bcrypt hash.txt</span><span style="color:#bf616a;"> --wordlist</span><span>=/path/to/wordlist
+</span></code></pre>
+<h2 id="linux-privilege-escalation">Linux Privilege Escalation</h2>
+<h3 id="useful-commands">Useful Commands</h3>
+<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#65737e;"># Find OS version / installed applications 
+</span><span style="color:#bf616a;">uname -a
+</span><span style="color:#bf616a;">dpkg -l
+</span><span style="color:#bf616a;">rpm -qa
+</span><span style="color:#bf616a;">apt</span><span> list</span><span style="color:#bf616a;"> --installed
+</span></code></pre>
+<p><a href="https://github.com/peass-ng/PEASS-ng/tree/master/linPEAS">linPEAS</a></p>
+<h3 id="linux-privesc-checklist">Linux Privesc Checklist</h3>
+<ul>
+<li>
+<p>Vulnerable services running as root (<code>ps aux | grep "^root"</code>)</p>
+</li>
+<li>
+<p>Readable/writable system files (/etc/passwd, /etc/shadow)</p>
+</li>
+<li>
+<p>SUDO/SUID/SGID privesc:</p>
+<ul>
+<li><a href="https://gtfobins.github.io/">GTFOBins</a></li>
+<li><code>sudo -l</code></li>
+</ul>
+</li>
+<li>
+<p>Check cron jobs for weak file permissions, wildcards, etc.</p>
+<ul>
+<li><code>find / -type f -name "*cron*"</code></li>
+</ul>
+</li>
+<li>
+<p>Check for passwords/keys in config, history, backups and databases</p>
+</li>
+<li>
+<p>Check for NFS shares with no root squashing</p>
+</li>
+</ul>
+<h2 id="windows-privilege-escalation">Windows Privilege Escalation</h2>
+<h3 id="common-commands">Common Commands</h3>
+<pre data-lang="batch" style="background-color:#2b303b;color:#c0c5ce;" class="language-batch "><code class="language-batch" data-lang="batch"><span>net user &lt;username&gt; &lt;password&gt; /add
+</span><span>net localgroup &lt;group&gt; &lt;username&gt; /add 
+</span><span>systeminfo
+</span></code></pre>
+<h3 id="common-tools">Common Tools</h3>
+<ul>
+<li><a href="https://github.com/peass-ng/PEASS-ng/tree/master/winPEAS">winPEAS</a> (lots of output)</li>
+<li><a href="https://learn.microsoft.com/en-us/sysinternals/downloads/psexec">PsExec</a></li>
+<li><a href="https://github.com/samratashok/nishang">Nishang Scripts</a></li>
+<li><a href="https://github.com/bitsadmin/wesng">Exploit Suggester</a></li>
+<li><a href="https://learn.microsoft.com/en-us/sysinternals/downloads/accesschk">Accesschk</a> (view ACLs for different resources)</li>
+<li><a href="https://www.chiark.greenend.org.uk/~sgtatham/putty/latest.html">plink.exe</a></li>
+</ul>
+<h3 id="windows-privesc-checklist">Windows Privesc Checklist</h3>
+<ul>
+<li>Modifiable services</li>
+<li>Unquoted service paths</li>
+<li>Writable registry service path</li>
+<li>DLL hijacking</li>
+<li>AlwaysInstallElevated (.msi files)</li>
+<li>Saved credentials</li>
+<li>Pass the hash</li>
+<li>Scheduled tasks</li>
+<li>Potato attacks</li>
+<li>User privileges (<code>whoami /all</code>)</li>
+</ul>
+
+</section>
+
+
+            <div id="font_picker_container">
+                <button id="toggle_button">Pick a Font ▼</button>
+                <div id="font_picker_section">
+                    <input type="radio" id="font_anonymous" name="font" value="Anonymous Pro">
+                    <label for="font_anonymous">Anonymous Pro</label>
+                    <br>
+                    <input type="radio" id="font_lato" name="font" value="Lato">
+                    <label for="font_lato">Lato</label>
+                    <br>
+                    <input type="radio" id="font_lora" name="font" value="Lora">
+                    <label for="font_lora">Lora</label>
+                </div>
+            </div>
+        </main>
+    </div>
+</body>
+</html>
